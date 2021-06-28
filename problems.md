@@ -3,7 +3,26 @@
 List interesting problems in this document.
 
 
-## LCL-problems in linear form
+
+
+## Linear problems in LCL-form
+
+Listing interesting linear problems and their reductions.
+
+$d, \delta$ | $\beta, \alpha$ | $\Sigma$ | Active | Passive
+--------| -------|---------|----------|----------
+$d = 3, \delta = 3$ | $\beta = 2, \alpha = 1$ | $[0, 1/9) \cup (5/6, 1]$ | A AB AB  | B AB AB
+$d = 3, \delta = 3$ | $\beta = 2, \alpha = 3/2$ | $[0, 1/9) \cup (5/6, 1]$ | A AB AB  | B B AB
+$d = 3, \delta = 3$ | $\beta = 7/4, \alpha = 3/2$ | $[1/3, 2/4) \cup (5/6, 1]$ | A A AB | B AB AB
+
+
+
+
+
+
+
+
+## LCL-problems in another linear form
 
 These are usual problems transformed into the form
 - Labelset $\Sigma$ is a finite subset of $[0,1]$.
@@ -30,10 +49,3 @@ Path diagram | $A \; B \; C$ | $A \; A \; AB \; ABC \\ A \; AB \; AB \; AB$ | $[
 
 
 
-
-
-
-
-
-
-## Linear problems in LCL-form
