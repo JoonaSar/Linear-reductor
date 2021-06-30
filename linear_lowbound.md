@@ -13,8 +13,8 @@ Consider the following family of locally verifiable problems in (d, $\delta$)-bi
 
 The time complexity of the problem is either $O(1)$ or $\Omega( \log n)$.
 
-### Proof
-First consider the case $\frac{\alpha}{\delta} < \frac{\beta}{d}$. 
+## Proof
+### **Case** $\frac{\alpha}{\delta} < \frac{\beta}{d}$:
 
 If $\beta=d$ or $\alpha=0$, the problem is either zero round-solvable, or not at all. 
 
@@ -147,6 +147,36 @@ S_P &= \left\{\{B, x_2, x_3,..., x_\delta\} \;|\; x_i\in \Sigma \right\}.
 \end{aligned}
 $$
 
+### **Case** $\frac{\alpha}{\delta} = \frac{\beta}{d}$:
 
-Now let's consider what happens when $\frac{\alpha}{\delta} > \frac{\beta}{d}$.
 
+Suppose we have an algorithm that solves our problem in $o(\log n)$ time complexity. Let $A = \left[0, \frac{\alpha}{\delta} \right)$, $B = \left(\frac{\beta}{d}, 1 \right]$. Consider some valid solution for a graph. Let's choose the largest used label from $A$ and the smallest used label from $B$, $a_{max} = \max\left(\{l(e)\;|\;l(e)\in A\}\right)$ and $b_{min} = \min\left(\{l(e)\;|\;l(e)\in B\}\right)$. Now our labeling is also a valid solution to the problem
+$$
+\begin{aligned}
+
+\Sigma' &= \Sigma\\
+
+\alpha' &= \left(\frac{\alpha/\delta+a_{max}}{2}\right)\cdot \delta \\
+\beta' &= \left(\frac{\beta/d+b_{min}}{2}\right)\cdot d 
+
+\end{aligned}
+$$
+
+where especially
+
+$$
+\begin{aligned}
+
+a_{max} &<\frac{\alpha'}{\delta} < \frac{\alpha}{\delta}\\
+\frac{\beta}{d} &<\frac{\beta'}{d} < b_{min} \\
+\frac{\alpha'}{\delta} &< \frac{\beta'}{d}.
+
+\end{aligned}
+
+$$
+Our algorithm created a solution in $o(\log n)$ time to a problem that has time complexity $\Omega(\log n)$, which is a contradiction. Thus $\frac{\alpha}{\delta} = \frac{\beta}{d}\implies \Omega(\log n)$.
+
+### **Case** $\frac{\alpha}{\delta} > \frac{\beta}{d}$:
+
+
+Suppose we have an algorithm $A$ that solves our problem in $o(\log n)$ time complexity. (Something about counting sums of all edge labels in a regular high-girth graph. The algorithm has to fail somewhere, but all it ever sees at once is a tree, so it shouldn't.)
