@@ -11,14 +11,14 @@ Consider the following family of locally verifiable problems in (d, $\delta$)-bi
 
 ## Statement
 
-If $\frac{\alpha}{\delta} < \frac{\beta}{d}$, then the time complexity of the problem is either $O(1)$ or $\Omega( \log n)$.
+The time complexity of the problem is either $O(1)$ or $\Omega( \log n)$.
 
 ### Proof
-Let $\frac{\alpha}{\delta} < \frac{\beta}{d}$. 
+First consider the case $\frac{\alpha}{\delta} < \frac{\beta}{d}$. 
 
 If $\beta=d$ or $\alpha=0$, the problem is either zero round-solvable, or not at all. 
 
-Now assume these additional inequalities and their implications:
+Now let's assume these additional inequalities:
 $$
 \begin{aligned}
 
@@ -44,7 +44,7 @@ $$
 &\underbrace{A, A, ..., A}_{d-2 \text{ times}}, B, B &= \quad &\left(2\cdot \frac{\beta}{d}, \quad (d-2)\cdot \frac{\alpha}{\sigma}+2 \right)\\
 &\vdots \\
 & A, A, \underbrace{B, B, ...,B}_{d-2 \text{ times}}  &= \quad &\left((d-2)\cdot \frac{\beta}{d}, \quad 2\cdot \frac{\alpha}{\sigma} + (d-2) \right)\\
-& A,\underbrace{B, B, ...,B}_{d-1 \text{ times}} &= \quad &\left((d-1)\cdot \frac{\beta}{d}, \quad  \frac{\alpha}{\sigma}(d-1) \right)\\
+& A,\underbrace{B, B, ...,B}_{d-1 \text{ times}} &= \quad &\left((d-1)\cdot \frac{\beta}{d}, \quad  \frac{\alpha}{\sigma}+(d-1) \right)\\
 & \underbrace{B, B, ...,B}_{d \text{ times}} &= \quad &\left(d\cdot \frac{\beta}{d}, \quad d \right]\\
 
 \end{aligned}
@@ -60,7 +60,7 @@ $$
 &\underbrace{A, A, ..., A}_{\delta-2 \text{ times}}, B, B &= \quad &\left(2\cdot \frac{\beta}{d}, \quad (\delta -2)\cdot \frac{\alpha}{\delta}+2 \right)\\
 &\vdots \\
 & A, A, \underbrace{B, B, ...,B}_{\delta-2 \text{ times}}  &= \quad &\left((\delta -2)\cdot \frac{\beta}{d}, \quad 2\cdot \frac{\alpha}{\delta} + (\delta -2) \right)\\
-& A,\underbrace{B, B, ...,B}_{\delta-1 \text{ times}} &= \quad &\left((\delta -1)\cdot \frac{\beta}{d}, \quad  \frac{\alpha}{\delta}(\delta -1) \right)\\
+& A,\underbrace{B, B, ...,B}_{\delta-1 \text{ times}} &= \quad &\left((\delta -1)\cdot \frac{\beta}{d}, \quad  \frac{\alpha}{\delta}+(\delta -1) \right)\\
 & \underbrace{B, B, ...,B}_{\delta \text{ times}} &= \quad &\left(\delta \cdot \frac{\beta}{d}, \quad \delta  \right]\\
 
 \end{aligned}
@@ -72,7 +72,7 @@ Again each neighbourhood, except for $\underbrace{A, A, ...,A}_{ \delta \text{ t
 Now if we were able to choose values $a\in A$, $b\in B$ so that we can replace each interval with one label without breaking any labelings, our problem will be exactly sinkless orientation.
 
 
-Let us choose values $a=\frac{\alpha}{\delta}\left(1-\frac{\beta}{d}\right)$ and $b=\frac{\beta}{d}\left(1-\frac{\alpha}{\delta}\right)$, and show that reduction $A\to a$, $B\to b$ won't break any labelings.
+Let us choose values $\epsilon =  \frac{\beta\,\delta-\alpha\,d}{\delta^2\, d^2}>0$, $a=\frac{\alpha}{\delta}-\epsilon$ and $b=\frac{\beta}{d}+\epsilon$, and show that reduction $A\to a$, $B\to b$ won't break any labelings.
 
 For active nodes, we can focus on the reduction of the neighbourhood 
 $$
@@ -83,9 +83,70 @@ as $a+(d-1)b\leq \beta$ and $a<b$ imply the same inequality for all other neighb
 $$
 \begin{aligned}
 
-a+(d-1)b &= \frac{\alpha}{\delta} - \frac{\beta\, \alpha}{d\, \delta} + (d-1)\left(\frac{\beta}{d}+\frac{\beta\, \alpha}{d\, \delta}\right) \\
-&= \frac{\alpha}{\delta} - \frac{\beta\, \alpha}{d\, \delta} + \beta-\frac{\beta}{d}+(d-1)\frac{\beta\, \alpha}{d\, \delta} \\
-&= \beta+\frac{\alpha}{\delta}  -\frac{\beta}{d}+(d-2)\frac{\beta\, \alpha}{d\, \delta}
+a+(d-1)b &= \frac{\alpha}{\delta} - \epsilon + (d-1)\left(\frac{\beta}{d}+\epsilon\right) \\
+&= \frac{\alpha}{\delta} + \beta - \frac{\beta}{d} + (d-2)\epsilon \\
+&= \beta - \frac{\beta}{d} + \frac{\alpha}{\delta} + (d-2)\epsilon
+\end{aligned}
+$$
+Now $a+(d-1)b\leq\beta$ if and only if $(d-2)\epsilon \leq \frac{\beta}{d} - \frac{\alpha}{\delta}$. As $d, \delta \geq 2$:
+
+$$
+\begin{aligned}
+
+(d-2)\epsilon &= (d-2)\cdot \frac{\beta\,\delta-\alpha\,d}{\delta^2\, d^2} \\
+&< \frac{\beta\,\delta-\alpha\,d}{\delta\, d} \\
+&= \frac{\beta}{d} - \frac{\alpha}{\delta}
 
 \end{aligned}
 $$
+and thus $a+(d-1)b\leq \beta$.
+
+Now we've proven that all active constraints are satisfied after the reduction. Same deduction applies for passive nodes: we can concentrate on the neighbourhood
+$$
+\underbrace{A, A, ..., A}_{\delta-1 \text{ times}}, B = (\delta-1)a+b,
+$$
+as neighbourhoods with more B:s will then clearly be satisfied.
+
+$$
+\begin{aligned}
+
+(\delta-1)a+b &= (\delta-1)\left(\frac{\alpha}{\delta} - \epsilon\right) + \frac{\beta}{d}+\epsilon \\
+&= \alpha - \frac{\alpha}{\delta} + \frac{\beta}{d} - (\delta-2)\epsilon \\
+&= \alpha + \frac{\beta}{d} - \frac{\alpha}{\delta} - (\delta-2)\epsilon
+\end{aligned}
+$$
+Now $(\delta-1)a+b\geq \alpha$ if and only if $(\delta-2)\epsilon \leq \frac{\beta}{d} - \frac{\alpha}{\delta}$. As $d, \delta \geq 2$:
+
+$$
+\begin{aligned}
+
+(\delta-2)\epsilon &= (\delta-2)\cdot \frac{\beta\,\delta-\alpha\,d}{\delta^2\, d^2} \\
+&< \frac{\beta\,\delta-\alpha\,d}{\delta\, d} \\
+&= \frac{\beta}{d} - \frac{\alpha}{\delta}
+
+\end{aligned}
+$$
+
+Thus we have proven that the reduction $A\to a, B\to b$ won't break any labelings and so the relaxed problem is just as hard as its discretization:
+$$
+\begin{aligned}
+a &= \frac{\alpha}{\delta} - \frac{\beta\,\delta-\alpha\,d}{\delta^2\, d^2} \\
+b &= \frac{\beta}{d} + \frac{\beta\,\delta-\alpha\,d}{\delta^2\, d^2} \\
+\Sigma &= \{a,b\} \\
+
+S_A &= \left\{\{x_1, x_2, x_3,..., x_d\} \;|\; \sum_{x_i} \leq \beta, x_i \in \Sigma\right\} \\
+S_P &= \left\{\{x_1, x_2, x_3,..., x_\delta\} \;|\; \sum_{x_i} \geq \alpha, x_i \in \Sigma\right\},
+\end{aligned}
+$$
+which happens to be exactly the same problem as sinkless orientation:
+$$
+\begin{aligned}
+\Sigma &= \{A,B\} \\
+S_A &= \left\{\{A, x_2, x_3,..., x_d\} \;|\; x_i\in \Sigma \right\} \\
+S_P &= \left\{\{B, x_2, x_3,..., x_\delta\} \;|\; x_i\in \Sigma \right\}.
+\end{aligned}
+$$
+
+
+Now let's consider what happens when $\frac{\alpha}{\delta} > \frac{\beta}{d}$.
+
