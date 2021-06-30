@@ -1,4 +1,4 @@
-# Low-bound for packing-covering problems
+# Deterministic low-bound for packing-covering problems
 
 ## Problem
 Consider the following family of locally verifiable problems in (d, $\delta$)-biregular trees:
@@ -11,7 +11,7 @@ Consider the following family of locally verifiable problems in (d, $\delta$)-bi
 
 ## Statement
 
-The time complexity of the problem is either $O(1)$ or $\Omega( \log n)$.
+The deterministic time complexity of the problem is either $O(1)$ or $\Omega( \log n)$.
 
 ## Proof
 ### **Case** $\frac{\alpha}{\delta} < \frac{\beta}{d}$:
@@ -179,4 +179,4 @@ Our algorithm created a solution in $o(\log n)$ time to a problem that has time 
 ### **Case** $\frac{\alpha}{\delta} > \frac{\beta}{d}$:
 
 
-Suppose we have an algorithm $A$ that solves our problem in $o(\log n)$ time complexity. (Something about counting sums of all edge labels in a regular high-girth graph. The algorithm has to fail somewhere, but all it ever sees at once is a tree, so it shouldn't.)
+Suppose we have an algorithm $A$ that solves our problem in $o(\log n)$ time complexity. (Something about counting sums of all edge labels in a regular high-girth graph. The algorithm has to fail in some local neighbourhood, but all it ever sees at once is a tree, so it shouldn't.)
