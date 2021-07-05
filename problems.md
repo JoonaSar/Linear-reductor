@@ -4,6 +4,16 @@ List interesting problems in this document.
 
 
 
+## Interesting/hard problems
+
+$`d, \delta`$ | $`\beta, \alpha`$ | $`\Sigma`$ | Interesting part
+--------| -------|---------|--------------------
+3, 3 | 1, 1 | $`[0,1]\setminus \{1/3\}`$ | Doesn't discretize. Harder than SO, maybe 2 coloring with choice?
+3, 3 | 1, 1 | $`[0, 1/3) \cup [1/2, 1]`$ | Same as above. Any value from $`(1/3, 1/2]`$ breaks discretization.
+
+
+
+
 
 ## Linear problems in LCL-form
 
