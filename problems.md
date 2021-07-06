@@ -8,8 +8,11 @@ List interesting problems in this document.
 
 $`d, \delta`$ | $`\beta, \alpha`$ | $`\Sigma`$ | Interesting part
 --------| -------|---------|--------------------
-3, 3 | 1, 1 | $`[0,1]\setminus \{1/3\}`$ | Doesn't discretize. Harder than SO, maybe 2 coloring with choice?
+3, 3 | 1, 1 | $`[0,1]\setminus \{1/3\}`$ | (W/O slack) Doesn't discretize. Harder than SO, maybe 2 coloring with choice? One W/B row.
 3, 3 | 1, 1 | $`[0, 1/3) \cup [1/2, 1]`$ | Same as above. Any value from $`(1/3, 1/2]`$ breaks discretization.
+4, 4 | 2, 5/2 | $`[0, 1/4) \cup (3/4, 1] `$  | (W/ Slack) Doesn't discretize. Two W/B rows. 
+4, 4 | 2, 5/2 | $`[0, 1/4) \cup (7/8, 1] `$  | (W/ Slack) Discretizes. One W/B row. 
+
 
 
 
