@@ -12,6 +12,9 @@ $`d, \delta`$ | $`\beta, \alpha`$ | $`\Sigma`$ | Interesting part
 3, 3 | 1, 1 | $`[0, 1/3) \cup [1/2, 1]`$ | Same as above. Any value from $`(1/3, 1/2]`$ breaks discretization.
 4, 4 | 5/2, 2 | $`[0, 1/4) \cup (3/4, 1] `$  | (W/ Slack) Doesn't discretize. Two W/B rows. 
 4, 4 | 5/2, 2 | $`[0, 1/4) \cup (7/8, 1] `$  | (W/ Slack) Discretizes. One W/B row. 
+3, 3 | 1.6, 1.4 | $`[0, 21/45) \cup (24/45, 1]`$ | (W/ Slack) Discretizes. Baseline for next problem. Two W/B rows.
+3, 3 | 1.6, 1.4 | $`[0, 1/3) \cup (1/3, 21/45) \cup (24/45, 1]`$ | (W/ Slack) Doesn't discretize, but A and B are interchangeable in neighborhood table. (Splitting causes non-discretizability, check previous problem.)
+3, 3 | 1, 2 | $`[0, 4/10] \cup [5/10, 8/10) \cup (8/10, 1]`$ | (W/ **Anti-Slack**) Doesn't discretize. **No W/B rows**.
 
 
 
