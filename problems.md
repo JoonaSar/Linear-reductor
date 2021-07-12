@@ -41,10 +41,10 @@ $`d = 3, \delta = 3`$ | $`\beta = 7/4, \alpha = 3/2`$ | $`[1/3, 2/4) \cup (5/6, 
 ## LCL-problems in another linear form
 
 These are usual problems transformed into the form
-- Labelset $`\Sigma`$ is a finite subset of $`[0,1]$.
+- Labelset $`\Sigma`$ is a finite subset of $`[0,1]`$.
 - The sum of labels incident to
-  - an active node is in $`\alpha \subseteq [0,1]$
-  - a passive node is in $`\beta \subseteq [0,1]$
+  - an active node is in $`\alpha \subseteq [0,1]`$
+  - a passive node is in $`\beta \subseteq [0,1]`$
 
 
 Problem | Active | Passive | $`\alpha`$ | $`\beta`$ | Labels
