@@ -7,6 +7,8 @@ Linear reductor is a program designed to help solve the time complexities of a c
 - [x] Union of intervals when both are equivalent.
 - [ ] Union of intervals when one is strictly more flexible than the other.
 - [ ] Dissection of an interval when it cannot be discretized.
+- [ ] Add test suite.
+- [ ] Convert the notebook to a normal python program.
 
 
 
