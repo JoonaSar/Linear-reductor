@@ -5,10 +5,10 @@ Linear reductor is a program designed to help solve the time complexities of a c
 
 ### Improvements
 - [x] Union of intervals when both are equivalent.
-- [ ] Union of intervals when another is always more expressive.
-- [ ] Disection of an interval when it cannot be discretized.
+- [ ] Union of intervals when one is strictly more flexible than the other.
+- [ ] Dissection of an interval when it cannot be discretized.
 
 
 
 ### Maybe in the future
-- [ ] Rewrite the program in a faster language.
+- [ ] Rewrite the program, perhaps in a faster language.
