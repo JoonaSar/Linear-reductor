@@ -14,9 +14,9 @@ $`d, \delta`$ | $`\beta, \alpha`$ | $`\Sigma`$ | Interesting part
 4, 4 | 5/2, 2 | $`[0, 1/4) \cup (7/8, 1] `$  | (W/ Slack) Discretizes. One W/B row. 
 3, 3 | 1.6, 1.4 | $`[0, 21/45) \cup (24/45, 1]`$ | (W/ Slack) Discretizes. Baseline for next problem. Two W/B rows.
 3, 3 | 1.6, 1.4 | $`[0, 1/3) \cup (1/3, 21/45) \cup (24/45, 1]`$ | ~~(W/ Slack) Doesn't discretize, but A and B are interchangeable in neighborhood table. (Splitting causes non-discretizability, check previous problem.)~~ Discretizes as of 12.7.
-3, 3 | 1.6, 1.4 | $`[0, 1/10) \cup (1/3, 21/45) \cup (24/45, 1]`$ | (W/ Slack) Doesn't discretize. Here the small interval $`[0, 1/10)`$ breaks discretization, but it could be joined to the next interval, as it is possible to replace it in any neighborhood.
+3, 3 | 1.6, 1.4 | $`[0, 1/10) \cup (1/3, 21/45) \cup (24/45, 1]`$ | ~~(W/ Slack) Doesn't discretize. Here the small interval $`[0, 1/10)`$ breaks discretization, but it could be joined to the next interval, as it is possible to replace it in any neighborhood.~~ Discretizes as of 14.7.
+3, 3 | 1.6, 1.4 | $`[0, 1/10) \cup (20/45, 21/45) \cup (30/45, 1]`$ | (W/ Slack) Doesn't discretize. The smaller interval $`[0, 1/10)`$ cannot be replaced with $`(20/45, 21/45)`$ in all neighborhoods, so joining those intervals is not going to help. Any discretization value from the smaller part would not satisfy all of the neighborhoods accepted by the larger part, and vice versa.
 3, 3 | 1, 2 | $`[0, 4/10] \cup [5/10, 8/10) \cup (8/10, 1]`$ | (W/ **Anti-Slack**) Doesn't discretize. **No W/B rows**.
-3, 3 | 1.6, 1.4 | $`[0, 1/10) \cup (20/45, 21/45) \cup (30/45, 1]`$ (W/ Slack) Doesn't discretize. The smaller interval $`[0, 1/10)`$ cannot be replaced with $`(20/45, 21/45)`$ in all neighborhoods, so joining those intervals is not going to help. Any discretization value from the smaller part would not satisfy all of the neighborhoods accepted by the larger part, and vice versa.
 
 
 
