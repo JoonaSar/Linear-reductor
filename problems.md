@@ -17,8 +17,8 @@ $`d, \delta`$ | $`\beta, \alpha`$ | $`\Sigma`$ | Interesting part
 3, 3 | 1.6, 1.4 | $`[0, 1/10) \cup (1/3, 21/45) \cup (24/45, 1]`$ | ~~(W/ Slack) Doesn't discretize. Here the small interval $`[0, 1/10)`$ breaks discretization, but it could be joined to the next interval, as it is possible to replace it in any neighborhood.~~ Discretizes as of 14.7.
 3, 3 | 1.6, 1.4 | $`[0, 1/10) \cup (20/45, 21/45) \cup (30/45, 1]`$ | (W/ Slack) Doesn't discretize. The smaller interval $`[0, 1/10)`$ cannot be replaced with $`(20/45, 21/45)`$ in all neighborhoods, so joining those intervals is not going to help. Any discretization value from the smaller part would not satisfy all of the neighborhoods accepted by the larger part, and vice versa.
 3, 3 | 1, 2 | $`[0, 4/10] \cup [5/10, 8/10) \cup (8/10, 1]`$ | (W/ **Anti-Slack**) Doesn't discretize. **No W/B rows**.
-3, 3 | 1, 2 | $`[0, 1/2) \cup (1/2, 1]`$ | (W/ Anti-Slack) Discretizes after splitting intervals at (1/3, 2/3).
-3, 3 | 1, 1.5 | $`[0, 1/2] \cup (1/2, 1]`$ | (W/Anti-Slack) Doesn't seem to discretize, even after splitting intervals at every 1/6:th.
+3, 3 | 1, 2 | $`[0, 4/10] \cup [1/2, 1]`$ | (W/ Anti-Slack) Discretizes after splitting intervals at every 1/3:rd, with endpoints $`...1/3]\cup(1/3...2/3)\cup[2/3...`$.
+3, 3 | 1, 1.5 | $`[0, 4/10) \cup [1/2, 1]`$ | (W/Anti-Slack) Doesn't seem to discretize, even after splitting intervals at every 1/6:th. Maybe with proper endpoint placement?
 
 
 
