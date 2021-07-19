@@ -1,17 +1,7 @@
-#import numpy as np 
-#import pandas as pd
 import portion as P 
-#import string
-#import itertools
-#import math
-#import re
 from fractions import Fraction
-#from scipy.optimize import linprog
-#from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
 from functools import reduce
 from base_logger import logger
-
-
 from solver import find_reductions
 from intervals import interval_list_splitter, create_neighborhoods, create_interval_df, \
     detect_unions, join_intervals
@@ -38,6 +28,7 @@ split_count = 12
 # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
 epsilon = 0.000001
 
+
 def convert(s):
     try:
         return float(s)
@@ -50,16 +41,10 @@ params = {
 
 interval_li = list(map(lambda x: P.from_string(x, conv=Fraction), Sigma_string.split(" U ")))
 Sigma = reduce(lambda a, b: a | b, interval_li)  
+logger.info(f"Sigma: {Sigma}")
 
 var_stack = (d, delta, beta, alpha, epsilon, Sigma)
 
-# Create logger. Logging levels are: DEBUG, INFO, WARNING, ERROR, CRITICAL (not all are necessarily used) 
-
-
-# Define parser for Sigma
-      
-
-logger.info(f"Sigma: {Sigma}")
 
 def run_reductor():
     # Main program running reductions. It first checks for 0-round solutions, then 

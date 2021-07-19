@@ -1,11 +1,7 @@
-#import numpy as np 
-#import pandas as pd
 import portion as P 
 import string
-#import itertools
 import math
 import logging
-#import re
 from fractions import Fraction
 from scipy.optimize import linprog
 from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
@@ -106,7 +102,7 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
             if "TRICK_VAR" not in var.name.upper() and "__DUMMY" not in var.name.upper():
                 intervals.loc[var.name.upper(), "reduction"] = var.value()
             
-            #if "TRICK_VAR" in var.name.upper():
+            if "TRICK_VAR" in var.name.upper():
                 logger.info(f"{var.name}: {var.value()}")
             
         return intervals

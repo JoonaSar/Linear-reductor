@@ -3,12 +3,8 @@ import pandas as pd
 import portion as P 
 import string
 import itertools
-#import math
 import logging
-#import re
 from fractions import Fraction
-#from scipy.optimize import linprog
-#from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
 from functools import reduce
 from base_logger import logger
 
