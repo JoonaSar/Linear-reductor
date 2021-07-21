@@ -73,6 +73,9 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
                     model += (variable<=interval[c].upper + tricksum, f"Init_{index}_upper_{c}")
                 else:
                     model += (variable<=interval[c].upper - epsilon + tricksum, f"Init_{index}_upper_{c}")
+            # Prevent any trick variable configuration not encoding an atomic interval
+            model += (reduce(lambda a, b: 2*a+b, trick_vars[::-1]) <= atomics-1, "Trick_var maximum")
+
 
     # Add the constraints imposed by summation of the original sets
     if d == delta:
@@ -105,4 +108,39 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
             if "TRICK_VAR" in var.name.upper():
                 logger.info(f"{var.name}: {var.value()}")
             
-        return intervals
+        print(intervals)
+        print_retor(neighborhoods, var_stack)
+    
+
+def print_retor(neighborhoods, var_stack):
+    # Translate the problem to round-eliminator formalism. 
+    # Returned LCL is at most as hard as the given problem. 
+    # If the problem is discretizable, the discretization gives a zero round mapping between these problems.
+    d, delta, beta, alpha, epsilon, Sigma = var_stack
+
+    if d == delta:
+        white_retor = ""
+        black_retor = ""
+        for index, row in neighborhoods.iterrows():
+            if row["W"]:
+                white_retor += " ".join(row["combination"])
+                white_retor += "\n"
+            if row["B"]:
+                black_retor += " ".join(row["combination"])
+                black_retor += "\n"
+
+    else:
+        white_retor = ""
+        black_retor = ""
+        for index, row in neighborhoods.iterrows():
+            if len(row["combination"]) == d and row["OK"]:
+                black_retor += " ".join(row["combination"])
+                black_retor += "\n"
+            elif row["OK"]:
+                white_retor += " ".join(row["combination"])
+                white_retor += "\n"
+    
+    
+    print("\nRound eliminator syntax:")
+    print("\n"+black_retor)
+    print("\n"+white_retor)

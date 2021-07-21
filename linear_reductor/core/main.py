@@ -15,15 +15,15 @@ d = 3
 delta = 3
 
 # The treshold for black and white sums
-beta = Fraction(10, 10)
-alpha = Fraction(15, 10)
+beta = Fraction(2, 1)
+alpha = Fraction(1, 1)
 
 # The set of possible labels
-Sigma_string = "[0, 4/10] U [5/10, 1]"
+Sigma_string = "[0, 1/10) U (1/10, 2/10) U (2/10, 3/10) U (7/10, 1]"
 
 # Do you want to split Sigma into smaller parts? This can help in some situations.
 do_split = False
-split_count = 12
+split_count = 10
 
 # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
 epsilon = 0.000001
@@ -77,43 +77,9 @@ def run_reductor():
             
 
 
-        reduced_intervals = find_reductions(neighborhoods, intervals, interval_count, var_stack)
-        print(reduced_intervals)
-        print_retor(neighborhoods)
+        find_reductions(neighborhoods, intervals, interval_count, var_stack)
         
 
-
-def print_retor(neighborhoods):
-    # Translate the problem to round-eliminator formalism. 
-    # Returned LCL is at most as hard as the given problem. 
-    # If the problem is discretizable, the discretization gives a zero round mapping between these problems.
-
-    if d == delta:
-        white_retor = ""
-        black_retor = ""
-        for index, row in neighborhoods.iterrows():
-            if row["W"]:
-                white_retor += " ".join(row["combination"])
-                white_retor += "\n"
-            if row["B"]:
-                black_retor += " ".join(row["combination"])
-                black_retor += "\n"
-
-    else:
-        white_retor = ""
-        black_retor = ""
-        for index, row in neighborhoods.iterrows():
-            if len(row["combination"]) == d and row["OK"]:
-                black_retor += " ".join(row["combination"])
-                black_retor += "\n"
-            elif row["OK"]:
-                white_retor += " ".join(row["combination"])
-                white_retor += "\n"
-    
-    
-    print("\nRound eliminator syntax:")
-    print("\n"+black_retor)
-    print("\n"+white_retor)
 
 
 if __name__== "__main__":
