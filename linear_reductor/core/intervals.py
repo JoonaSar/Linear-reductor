@@ -191,33 +191,52 @@ def join_intervals(intervals, union_list):
     
     return interval_list
 
+def regular_interval_split(interval_list, split_count, var_stack):
+    # Split the interval list at points (1/splits, 2/splits, ... , (splits-1)/splits)
+
+    splits = [Fraction(x+1, split_count) for x in range(split_count-1)]
+    
+    return interval_list_splitter(interval_list, splits, var_stack)
+
+
+
 def interval_list_splitter(interval_list, splits, var_stack):
-    # Split the interval list at (1/splits, 2/splits, ... , (splits-1)/splits)
+    # Split the interval list at points given in splits.
     # This can help in some cases, especially when beta<alpha (anti-slack).
     # TODO: fix splitted interval endpoints, now both splits contain the endpoint. Can have a huge effect.
-    # Now implemented as (] until "midpoint" and [) onwards. This is some handwavy variable, there may be some better way to determine these. 
+    # Now implemented as half-open intervals (] until "midpoint" and [) onwards, where also first and last are closed intervals []. This is some handwavy variable, there may be some better way to determine these. 
     
     d, delta, beta, alpha, epsilon, Sigma = var_stack
     new_int_li = []
     
-    midpoint = np.mean([alpha, beta])/np.mean([d, delta])
+    # Handwavy heuristic value
+    midpoint = np.mean([alpha, beta])/np.mean([d, delta])    
+    
+    # Previous split value
+    prev = 0
+    
+    for x in splits:
 
-    for x in range(splits):
-
-        left_in = x==0 or x/splits > midpoint
+        left_in = prev==0 or prev > midpoint
         
-        right_in = x==splits-1 or (x+1)/splits <= midpoint
+        right_in = x <= midpoint
 
         if left_in and right_in:
-            interval = P.closed(Fraction(x, splits), Fraction(x+1, splits)) & Sigma
+            interval = P.closed(prev, x) & Sigma
         if left_in and not right_in:
-            interval = P.closedopen(Fraction(x, splits), Fraction(x+1, splits)) & Sigma
+            interval = P.closedopen(prev, x) & Sigma
         if not left_in and right_in:
-            interval = P.openclosed(Fraction(x, splits), Fraction(x+1, splits)) & Sigma
+            interval = P.openclosed(prev, x) & Sigma
         if not left_in and not right_in:
-            interval = P.open(Fraction(x, splits), Fraction(x+1, splits)) & Sigma
+            interval = P.open(prev, x) & Sigma
         
         if not interval.empty: new_int_li.extend(interval)
+
+        prev = x
+    # Handle the last interval [last_split, 1]
+    interval = P.closed(prev, 1) & Sigma
+    if not interval.empty: new_int_li.extend(interval)
+
     
     # Verify that splitting didn't create or miss any points:
     splitted_sigma = reduce(lambda a, b: a | b, new_int_li)
@@ -225,7 +244,7 @@ def interval_list_splitter(interval_list, splits, var_stack):
         logger.error("Interval splitter dropped/added some point(s)!")
         logger.error(f"Sigma:\n{Sigma}\nUnion of splitted intervals:\n{splitted_sigma}")
 
-    logger.debug(f"Interval was split at every 1/{splits} fraction. The midpoint heuristic value was {midpoint}.")
+    logger.debug(f"Interval was split at {splits}. The midpoint heuristic value was {midpoint}.")
     return new_int_li
 
 def sum_intervals(combination, interval_list):

@@ -4,7 +4,7 @@ from functools import reduce
 from base_logger import logger
 from solver import find_reductions
 from intervals import interval_list_splitter, create_neighborhoods, create_interval_df, \
-    detect_unions, join_intervals
+    detect_unions, join_intervals, regular_interval_split
 
 
 
@@ -15,15 +15,15 @@ d = 3
 delta = 3
 
 # The treshold for black and white sums
-beta = Fraction(2, 1)
-alpha = Fraction(1, 1)
+beta = Fraction(1, 1)
+alpha = Fraction(2, 1)
 
 # The set of possible labels
-Sigma_string = "[0, 1/10) U (1/10, 2/10) U (2/10, 3/10) U (7/10, 1]"
+Sigma_string = "[0, 4/10] U [5/10, 1]"
 
 # Do you want to split Sigma into smaller parts? This can help in some situations.
-do_split = False
-split_count = 10
+do_split = True
+split_count = 3
 
 # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
 epsilon = 0.000001
@@ -61,7 +61,7 @@ def run_reductor():
         print("No 0-round solutions found.")
 
         if do_split:
-            interval_list = interval_list_splitter(interval_li, split_count, var_stack)
+            interval_list = regular_interval_split(interval_li, split_count, var_stack)
         else:
             interval_list = interval_li
         intervals, interval_count = create_interval_df(interval_list) 

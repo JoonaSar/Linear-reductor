@@ -74,7 +74,7 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
                 else:
                     model += (variable<=interval[c].upper - epsilon + tricksum, f"Init_{index}_upper_{c}")
             # Prevent any trick variable configuration not encoding an atomic interval
-            model += (reduce(lambda a, b: 2*a+b, trick_vars[::-1]) <= atomics-1, "Trick_var maximum")
+            model += (reduce(lambda a, b: 2*a+b, trick_vars[::-1]) <= atomics-1, f"Trick_var_maximum_{index}")
 
 
     # Add the constraints imposed by summation of the original sets
