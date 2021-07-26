@@ -8,7 +8,7 @@ List interesting problems in this document.
 
 $`d, \delta`$ | $`\beta, \alpha`$ | $`\Sigma`$ | Interesting part
 --------| -------|---------|--------------------
-3, 3 | 1, 1 | $`[0,1]\setminus \{1/3\}`$ | (W/O slack) Doesn't discretize. Harder than SO, maybe 2 coloring with choice? Two W/B rows.
+3, 3 | 1, 1 | $`[0,1]\setminus \{1/3\}`$ | (W/O slack) Doesn't discretize. Harder than SO, maybe 2 coloring with choice? Two W/B rows. **Doesn't discretize under any split!** 
 3, 3 | 1, 1 | $`[0, 1/3) \cup [1/2, 1]`$ | Same as above. Any value from $`(1/3, 1/2]`$ breaks discretization.
 4, 4 | 5/2, 2 | $`[0, 1/4) \cup (3/4, 1] `$  | (W/ Slack) Doesn't discretize. Two W/B rows. 
 4, 4 | 5/2, 2 | $`[0, 1/4) \cup (7/8, 1] `$  | (W/ Slack) Discretizes. One W/B row. 
@@ -18,7 +18,7 @@ $`d, \delta`$ | $`\beta, \alpha`$ | $`\Sigma`$ | Interesting part
 3, 3 | 1.6, 1.4 | $`[0, 1/10) \cup (20/45, 21/45) \cup (30/45, 1]`$ | (W/ Slack) Doesn't discretize. The smaller interval $`[0, 1/10)`$ cannot be replaced with $`(20/45, 21/45)`$ in all neighborhoods, so joining those intervals is not going to help. Any discretization value from the smaller part would not satisfy all of the neighborhoods accepted by the larger part, and vice versa.
 3, 3 | 1, 2 | $`[0, 4/10] \cup [5/10, 8/10) \cup (8/10, 1]`$ | (W/ **Anti-Slack**) ~~Doesn't discretize. **No W/B rows**.~~ Discretizes after splitting to at every 1/3:rd. 
 3, 3 | 1, 2 | $`[0, 4/10] \cup [1/2, 1]`$ | (W/ Anti-Slack) Discretizes after splitting intervals at every 1/3:rd, with endpoints $`...1/3]\cup(1/3...2/3)\cup[2/3...`$.
-3, 3 | 1, 1.5 | $`[0, 4/10) \cup [1/2, 1]`$ | (W/Anti-Slack) Doesn't seem to discretize, even after splitting intervals at every 1/6:th. Maybe with proper endpoint placement?
+3, 3 | 1, 1.5 | $`[0, 4/10) \cup [1/2, 1]`$ | (W/ Anti-Slack) Doesn't seem to discretize, even after splitting intervals at every 1/6:th. Won't work in any endpoint configuration, tested by dropping all endpoints. 
 
 
 

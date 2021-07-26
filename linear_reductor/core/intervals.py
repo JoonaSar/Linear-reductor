@@ -91,86 +91,100 @@ def detect_unions(neighborhoods, intervals, interval_count, var_stack):
     pairs = [string.ascii_uppercase[i:i+2] for i in range(interval_count-1)]
 
     new_intervals = "A"
+    join_found = False
+    join_ended = False
 
     for pair in pairs:
-
-        low_worse = False
-        high_worse = False
-        problem_df = pd.DataFrame()
+        # Handle at most one joinable set in each round, so that two joins don't break each other,
+        # eg. AB is a join if intervals C and D are not joined, and CD can be joined if A and B aren't.
         
-        others = [c for c in string.ascii_uppercase[0:interval_count] if c not in pair]
+        if not (join_found and join_ended):
+            low_worse = False
+            high_worse = False
+            problem_df = pd.DataFrame()
+            
+            others = [c for c in string.ascii_uppercase[0:interval_count] if c not in pair]
 
-        for i in range(d, 0, -1):
-            for end in itertools.combinations_with_replacement(others, d-i):
+            for i in range(d, 0, -1):
+                for end in itertools.combinations_with_replacement(others, d-i):
 
-                low_index = tuple(sorted(tuple(itertools.repeat(pair[0], i)) + end))
-                high_index = tuple(sorted(tuple(itertools.repeat(pair[1], i)) + end))
-                
-                low_row = neighborhoods.loc[neighborhoods["combination"] == low_index,  :]
-                high_row = neighborhoods.loc[neighborhoods["combination"] == high_index, :]
-
-                if d == delta:
-
-                    if low_row["W"].iloc[0] != high_row["W"].iloc[0] and not low_worse:
-                        low_worse = True
-                        problem_df = problem_df.append(low_row, ignore_index=True)
-                        problem_df = problem_df.append(high_row, ignore_index=True)
-
-                    
-                    if low_row["B"].iloc[0] != high_row["B"].iloc[0] and not high_worse:
-                        high_worse = True
-                        problem_df = problem_df.append(low_row, ignore_index=True)
-                        problem_df = problem_df.append(high_row, ignore_index=True)
-                    
-                    if low_worse and high_worse:
-                        logger.debug(f"{pair} is not interchangeable:\n{problem_df}")
-                        break
-                
-                else:
-                    if not low_row["OK"].iloc[0] and high_row["OK"].iloc[0] and not low_worse:
-                        low_worse = True
-                        problem_df.append(low_row, ignore_index=True)
-                        problem_df.append(high_row, ignore_index=True)
-
-                    
-                    if low_row["OK"].iloc[0] and not high_row["OK"].iloc[0] and not high_worse:
-                        high_worse = True
-                        problem_df.append(low_row, ignore_index=True)
-                        problem_df.append(high_row, ignore_index=True)
-                    
-                    if low_worse and high_worse:
-                        logger.debug(f"{pair} is not interchangeable:\n{problem_df}")
-                        # Breaks innermost loop (end)
-                        break
-            # Breaks outermost loop (i)
-            if low_worse and high_worse: break 
-
-        if d != delta:
-            for i in range(delta, 0, -1):
-                for end in itertools.combinations_with_replacement(others, delta-i):
                     low_index = tuple(sorted(tuple(itertools.repeat(pair[0], i)) + end))
                     high_index = tuple(sorted(tuple(itertools.repeat(pair[1], i)) + end))
-
+                    
                     low_row = neighborhoods.loc[neighborhoods["combination"] == low_index,  :]
                     high_row = neighborhoods.loc[neighborhoods["combination"] == high_index, :]
-                    
-                    if not low_row["OK"].iloc[0] and high_row["OK"].iloc[0] and not low_worse:
-                        low_worse = True
-                        problem_df = problem_df.append(low_row, ignore_index=True)
-                        problem_df = problem_df.append(high_row, ignore_index=True)
 
+                    if d == delta:
+
+                        if low_row["W"].iloc[0] != high_row["W"].iloc[0] and not low_worse:
+                            low_worse = True
+                            problem_df = problem_df.append(low_row, ignore_index=True)
+                            problem_df = problem_df.append(high_row, ignore_index=True)
+
+                        
+                        if low_row["B"].iloc[0] != high_row["B"].iloc[0] and not high_worse:
+                            high_worse = True
+                            problem_df = problem_df.append(low_row, ignore_index=True)
+                            problem_df = problem_df.append(high_row, ignore_index=True)
+                        
+                        if low_worse and high_worse:
+                            logger.debug(f"{pair} is not interchangeable:\n{problem_df}")
+                            break
                     
-                    if low_row["OK"].iloc[0] and not high_row["OK"].iloc[0] and not high_worse:
-                        high_worse = True
-                        problem_df = problem_df.append(low_row, ignore_index=True)
-                        problem_df = problem_df.append(high_row, ignore_index=True)
-                    
-                    if low_worse and high_worse:
-                        logger.debug(f"{pair} is not interchangeable:\n{problem_df}")
-                        break
+                    else:
+                        if not low_row["OK"].iloc[0] and high_row["OK"].iloc[0] and not low_worse:
+                            low_worse = True
+                            problem_df.append(low_row, ignore_index=True)
+                            problem_df.append(high_row, ignore_index=True)
+
+                        
+                        if low_row["OK"].iloc[0] and not high_row["OK"].iloc[0] and not high_worse:
+                            high_worse = True
+                            problem_df.append(low_row, ignore_index=True)
+                            problem_df.append(high_row, ignore_index=True)
+                        
+                        if low_worse and high_worse:
+                            logger.debug(f"{pair} is not interchangeable:\n{problem_df}")
+                            # Breaks innermost loop (end)
+                            break
+                # Breaks outermost loop (i)
+                if low_worse and high_worse: break 
+
+            if d != delta:
+                for i in range(delta, 0, -1):
+                    for end in itertools.combinations_with_replacement(others, delta-i):
+                        low_index = tuple(sorted(tuple(itertools.repeat(pair[0], i)) + end))
+                        high_index = tuple(sorted(tuple(itertools.repeat(pair[1], i)) + end))
+
+                        low_row = neighborhoods.loc[neighborhoods["combination"] == low_index,  :]
+                        high_row = neighborhoods.loc[neighborhoods["combination"] == high_index, :]
+                        
+                        if not low_row["OK"].iloc[0] and high_row["OK"].iloc[0] and not low_worse:
+                            low_worse = True
+                            problem_df = problem_df.append(low_row, ignore_index=True)
+                            problem_df = problem_df.append(high_row, ignore_index=True)
+
+                        
+                        if low_row["OK"].iloc[0] and not high_row["OK"].iloc[0] and not high_worse:
+                            high_worse = True
+                            problem_df = problem_df.append(low_row, ignore_index=True)
+                            problem_df = problem_df.append(high_row, ignore_index=True)
+                        
+                        if low_worse and high_worse:
+                            logger.debug(f"{pair} is not interchangeable:\n{problem_df}")
+                            break
         
-        if low_worse and high_worse: new_intervals += " "
-        new_intervals += pair[1]
+        
+            if low_worse and high_worse: 
+                new_intervals += " "
+                if join_found: join_ended = True
+            else:
+                join_found = True
+            new_intervals += pair[1]
+        # If we've found one joinable area which has ended, just add the rest of the intervals to listing.
+        else:
+            new_intervals += " "
+            new_intervals += pair[1]
 
     new_intervals = new_intervals.split(" ")
 
