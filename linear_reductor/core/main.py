@@ -4,7 +4,7 @@ from functools import reduce
 from base_logger import logger
 from solver import find_reductions
 from intervals import interval_list_splitter, create_neighborhoods, create_interval_df, \
-    detect_unions, join_intervals, regular_interval_split
+    detect_unions, join_intervals, regular_interval_split, name_gen
 
 
 
@@ -15,15 +15,15 @@ d = 3
 delta = 3
 
 # The treshold for black and white sums
-beta = Fraction(16, 10)
-alpha = Fraction(14, 10)
+beta = Fraction(10, 10)
+alpha = Fraction(15, 10)
 
 # The set of possible labels
-Sigma_string = "[0, 1/10) U (20/45, 21/45) U (30/45, 1]"
+Sigma_string = "[0, 4/10) U [1/2, 1]"
 
 # Do you want to split Sigma into smaller parts? This can help in some situations.
 do_split = True
-split_count = 20
+split_count = 55
 
 # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
 epsilon = 0.0001

@@ -14,7 +14,7 @@ def create_interval_df(interval_list):
 
     interval_count = len(interval_list)
     
-    intervals = pd.DataFrame({"interval": [x for x in interval_list]}, index=list(string.ascii_uppercase[0:interval_count]))
+    intervals = pd.DataFrame({"interval": [x for x in interval_list]}, index=name_gen(interval_count))
     intervals["reduction"] = None
 
     logger.info(f"Created following interval dataframe:\n{intervals}")
@@ -87,8 +87,8 @@ def detect_unions(neighborhoods, intervals, interval_count, var_stack):
     # then the endpoints have different truth values. 
         
     d, delta, beta, alpha, epsilon, Sigma = var_stack
-
-    pairs = [string.ascii_uppercase[i:i+2] for i in range(interval_count-1)]
+    
+    pairs = [name_gen(interval_count)[i:i+2] for i in range(interval_count-1)]
 
     new_intervals = "A"
     join_found = False
@@ -103,7 +103,7 @@ def detect_unions(neighborhoods, intervals, interval_count, var_stack):
             high_worse = False
             problem_df = pd.DataFrame()
             
-            others = [c for c in string.ascii_uppercase[0:interval_count] if c not in pair]
+            others = [c for c in name_gen(interval_count) if c not in pair]
 
             for i in range(d, 0, -1):
                 for end in itertools.combinations_with_replacement(others, d-i):
@@ -300,3 +300,18 @@ def basic_sum_intervals(interval_list):
     if not min_in and max_in:
         return P.openclosed(min, max)
     return P.open(min, max)
+
+
+# Return the list of interval names
+def name_gen(count = 56):
+    # Intervals are named in the following order:
+    # 0-25 get uppercase letters,
+    # 26-51 get lowercase letters,
+    # 52-61 get digits 0-9
+    # If there are more than 94 intervals, this will throw an error.
+    # Then a more sophisticated solution should be created.
+
+    s = string.ascii_uppercase + string.ascii_lowercase
+
+    return list(s[0 : count])
+    
