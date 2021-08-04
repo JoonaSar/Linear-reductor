@@ -7,7 +7,7 @@ from scipy.optimize import linprog
 from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
 from functools import reduce
 from base_logger import logger
-
+from tqdm import tqdm
 
 def find_reductions(neighborhoods, intervals, interval_count, var_stack):
     # Find discrete values in given intervals that satisfy all constraints given by neighborhoods.
@@ -24,7 +24,7 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
     
 
     # Add the constraints of the original sets
-    for index, row in intervals.iterrows():
+    for index, row in tqdm(intervals.iterrows(), total = intervals.shape[0], desc = "Creating linear inequalities"):
         variable = variables[index.lower()]
         interval = row["interval"]
         

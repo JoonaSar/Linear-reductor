@@ -5,6 +5,7 @@ from base_logger import logger
 from solver import find_reductions
 from intervals import interval_list_splitter, create_neighborhoods, create_interval_df, \
     detect_unions, join_intervals, regular_interval_split, name_gen
+from tqdm import tqdm
 
 
 
@@ -23,27 +24,26 @@ Sigma_string = "[0, 4/10) U [1/2, 1]"
 
 # Do you want to split Sigma into smaller parts? This can help in some situations.
 do_split = True
-split_count = 55
+split_count = 40
 
 # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
 epsilon = 0.0001
 
 
-def convert(s):
-    try:
-        return float(s)
-    except ValueError:
-        return (s)
-
 params = {
     'disj': ' U '
 }
 
-interval_li = list(map(lambda x: P.from_string(x, conv=Fraction), Sigma_string.split(" U ")))
-Sigma = reduce(lambda a, b: a | b, interval_li)  
-logger.info(f"Sigma: {Sigma}")
+def read_sigma(Sigma_string):
+    interval_li = list(map(lambda x: P.from_string(x, conv=Fraction), Sigma_string.split(" U ")))
+    Sigma = reduce(lambda a, b: a | b, interval_li)  
+    logger.info(f"Sigma: {Sigma}")
+    return Sigma, interval_li
+
+Sigma, interval_li = read_sigma(Sigma_string)
 
 var_stack = (d, delta, beta, alpha, epsilon, Sigma)
+
 
 
 def run_reductor():

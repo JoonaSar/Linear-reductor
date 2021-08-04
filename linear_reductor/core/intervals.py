@@ -7,6 +7,7 @@ import logging
 from fractions import Fraction
 from functools import reduce
 from base_logger import logger
+from tqdm import tqdm
 
 
 def create_interval_df(interval_list):
@@ -52,7 +53,7 @@ def create_neighborhoods(intervals, var_stack):
 
     # Then calculate the intervals, that the sum of these neighborhoods could have. 
     # If they contain any values suitable for active/passive nodes, the neighbourhood is considered as suitable for that color.
-    for index, row in neighborhoods.iterrows():
+    for index, row in tqdm(neighborhoods.iterrows(), total = neighborhoods.shape[0], desc = "Creating neighborhood table"):
         interval = sum_intervals(row["combination"], list(map(lambda x: intervals.loc[x, "interval"], row["combination"])))
         
         c = " ".join(row["combination"])
@@ -68,7 +69,10 @@ def create_neighborhoods(intervals, var_stack):
                 neighborhoods.at[index, "OK"] = not (black_range & interval).empty
                 
             else: neighborhoods.at[index, "OK"] = not (white_range & interval).empty
-            
+    
+
+
+                
     logger.info(f"Created following neighbourhoods:\n{neighborhoods}")
     return neighborhoods
 
@@ -94,7 +98,7 @@ def detect_unions(neighborhoods, intervals, interval_count, var_stack):
     join_found = False
     join_ended = False
 
-    for pair in pairs:
+    for pair in tqdm(pairs, desc = "Searching for unions"):
         # Handle at most one joinable set in each round, so that two joins don't break each other,
         # eg. AB is a join if intervals C and D are not joined, and CD can be joined if A and B aren't.
         
@@ -307,7 +311,6 @@ def name_gen(count = 56):
     # Intervals are named in the following order:
     # 0-25 get uppercase letters,
     # 26-51 get lowercase letters,
-    # 52-61 get digits 0-9
     # If there are more than 94 intervals, this will throw an error.
     # Then a more sophisticated solution should be created.
 
