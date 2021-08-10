@@ -4,7 +4,7 @@ import math
 import logging
 from fractions import Fraction
 from scipy.optimize import linprog
-from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
+from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable, PULP_CBC_CMD
 from functools import reduce
 from base_logger import logger
 from tqdm import tqdm
@@ -24,7 +24,7 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
     
 
     # Add the constraints of the original sets
-    for index, row in tqdm(intervals.iterrows(), total = intervals.shape[0], desc = "Creating linear inequalities"):
+    for index, row in tqdm(intervals.iterrows(), total = intervals.shape[0], desc = "Creating linear inequalities", delay = 0.5):
         variable = variables[index.lower()]
         interval = row["interval"]
         
@@ -96,11 +96,12 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
     logger.debug(f"\n{model}\n")
 
     # Search for solutions to the given system of inequalities
-    if model.solve() == -1:
-        print("No reductions found.")
+
+    # No solutions, return None instead of intervals
+    if model.solve(PULP_CBC_CMD(msg = 0)) == -1:
+        return None, neighborhoods 
     
     else:
-        print("Reductions found: ")
         for var in model.variables():
             if "TRICK_VAR" not in var.name.upper() and "__DUMMY" not in var.name.upper():
                 intervals.loc[var.name.upper(), "reduction"] = var.value()
@@ -108,39 +109,5 @@ def find_reductions(neighborhoods, intervals, interval_count, var_stack):
             if "TRICK_VAR" in var.name.upper():
                 logger.info(f"{var.name}: {var.value()}")
             
-        print(intervals)
-        print_retor(neighborhoods, var_stack)
+        return intervals, neighborhoods
     
-
-def print_retor(neighborhoods, var_stack):
-    # Translate the problem to round-eliminator formalism. 
-    # Returned LCL is at most as hard as the given problem. 
-    # If the problem is discretizable, the discretization gives a zero round mapping between these problems.
-    d, delta, beta, alpha, epsilon, Sigma = var_stack
-
-    if d == delta:
-        white_retor = ""
-        black_retor = ""
-        for index, row in neighborhoods.iterrows():
-            if row["W"]:
-                white_retor += " ".join(row["combination"])
-                white_retor += "\n"
-            if row["B"]:
-                black_retor += " ".join(row["combination"])
-                black_retor += "\n"
-
-    else:
-        white_retor = ""
-        black_retor = ""
-        for index, row in neighborhoods.iterrows():
-            if len(row["combination"]) == d and row["OK"]:
-                black_retor += " ".join(row["combination"])
-                black_retor += "\n"
-            elif row["OK"]:
-                white_retor += " ".join(row["combination"])
-                white_retor += "\n"
-    
-    
-    print("\nRound eliminator syntax:")
-    print("\n"+black_retor)
-    print("\n"+white_retor)

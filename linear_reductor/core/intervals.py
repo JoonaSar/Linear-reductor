@@ -53,7 +53,7 @@ def create_neighborhoods(intervals, var_stack):
 
     # Then calculate the intervals, that the sum of these neighborhoods could have. 
     # If they contain any values suitable for active/passive nodes, the neighbourhood is considered as suitable for that color.
-    for index, row in tqdm(neighborhoods.iterrows(), total = neighborhoods.shape[0], desc = "Creating neighborhood table"):
+    for index, row in tqdm(neighborhoods.iterrows(), total = neighborhoods.shape[0], desc = "Creating neighborhood table", delay = 0.5):
         interval = sum_intervals(row["combination"], list(map(lambda x: intervals.loc[x, "interval"], row["combination"])))
         
         c = " ".join(row["combination"])
@@ -98,7 +98,7 @@ def detect_unions(neighborhoods, intervals, interval_count, var_stack):
     join_found = False
     join_ended = False
 
-    for pair in tqdm(pairs, desc = "Searching for unions"):
+    for pair in tqdm(pairs, desc = "Searching for unions", delay = 0.5):
         # Handle at most one joinable set in each round, so that two joins don't break each other,
         # eg. AB is a join if intervals C and D are not joined, and CD can be joined if A and B aren't.
         
