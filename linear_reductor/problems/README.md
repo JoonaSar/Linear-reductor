@@ -14,18 +14,24 @@ Problems are listed in a directory in the following format:
 ```
 📦problems
  ┣ 📂anti-slack
- ┃ ┣ 📜problem 1.txt
- ┃ ┗ 📜problem 2.txt
+ ┃ ┣ 📂problem_1
+ ┃ ┃ ┣ 📜problem_1.json
+ ┃ ┃ ┗ 📜problem_1.md
+ ┃ ┗ 📂problem_2
+ ┃ ┃ ┣ 📜problem_2.json
+ ┃ ┃ ┗ 📜problem_2.md
  ┣ 📂exact
- ┃ ┣ 📜problem 3.txt
- ┃ ┗ 📜problem X.txt
+ ┃ ┗ 📂problem_X
+ ┃ ┃ ┣ 📜problem_X.json
+ ┃ ┃ ┗ 📜problem_X.md
  ┣ 📂slack
- ┃ ┣ 📜problem 4.txt
- ┃ ┗ 📜problem 5.txt
+ ┃ ┗ 📂problem_3
+ ┃ ┃ ┣ 📜problem_3.json
+ ┃ ┃ ┗ 📜problem_3.md
  ┗ 📜README.md
 ```
 
-At the start of each problem file there should be a JSON structure like this:
+Each problem directory contains one human readable markdown file and one JSON-file of the following format:
 ```
 File
  ┣ name                         // string
@@ -39,51 +45,31 @@ File
  ┃ ┣ split_count                // int
  ┃ ┗ epsilon                    // float
  ┗ Solution
-   ┣ interval_df                // dict (interval dataframe)
-   ┣ neighborhoods              // dict (neighborhoods dataframe)
-   ┗ manual_neighborhoods       // bool
-
+ ┃ ┣ interval_df                // dict (interval dataframe)
+ ┃ ┣ neighborhoods              // dict (neighborhoods dataframe)
+ ┃ ┗ manual_neighborhoods       // bool
 ```
 
-For example:
-```
-{
-        "name": "Problem name",
-        "parameters": {
-                "d": 3,
-                "delta": 3,
-                "beta": [
-                        1,
-                        1
-                ],
-                "alpha": [
-                        1,
-                        1
-                ],
-                "Sigma_string": "[0, 1/3) U (2/3, 1]",
-                "do_split": false,
-                "split_count": 40,
-                "epsilon": 0.0001
-        },
-        "solution": {
-                "interval_df": {
-                        "interval": {
-                                "A": "[Fraction(0, 1),Fraction(1, 3))",
-                                "B": "(Fraction(2, 3),Fraction(1, 1)]"
-                        },
-                        "reduction": {
-                                "A": 0.16661667,
-                                "B": 0.66676667
-                        }
-                },
-                "neighborhoods": {
-                        ... // Neighborhoods-dataframe as dict
-                    }
-                },
-                "manual_neighborhoods": false
-        }
-}
+Examples of interval and neighborhoods dataframes:<br>
 
-Some text about the problem....
-```
 
+$\;$| Interval | Reduction
+----|---------|---------
+A |$[0, 1/3)$ | $0.16661667$
+B |$(2/3, 1]$ | $0.66676667$
+
+<br><br>
+
+$\;$| W | B
+----|---|--
+A A A | `false` | `true`
+A A B | `true` | `true`
+A B B | `true` | `false`
+B B B | `true` | `false`
+
+
+
+## Generating problems
+
+
+Anything written after `## Notes` in the human readable markdown-files is preserved. All other markings are overwritten each time the problem files are saved there.
