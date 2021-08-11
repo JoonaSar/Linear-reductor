@@ -1,9 +1,12 @@
-import PySimpleGUI as sg 
-from main import run_reductor, read_sigma
-from fractions import Fraction
-from solver import find_reductions
-from base_logger import logger
 import logging
+from fractions import Fraction
+
+import PySimpleGUI as sg
+
+from base_logger import logger
+from main import run_reductor
+from solver import find_reductions
+from problem import Problem
 
 sg.theme('Dark Amber') # Add some color
 
@@ -52,9 +55,8 @@ while True:
         break
     i+=1
     if event == 'Find reductions':
-        #window['-OUTPUT-'].update(read_sigma(values['-IN_SIGMA-'])[0])
 
-        Sigma, interval_li = read_sigma(values['-IN_SIGMA-'])
+        Sigma_string = values['-IN_SIGMA-']
         alpha = Fraction(values['-IN_ALPHA-'])
         beta = Fraction(values['-IN_BETA-'])
         epsilon = float(values["-IN_EPSILON-"])
@@ -64,11 +66,11 @@ while True:
         do_split = False
         split_count = 40
 
-        var_stack = (d, delta, beta, alpha, epsilon, Sigma)
+        problem = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
 
-        interval_df, neighborhoods, intervals, interval_count = run_reductor(var_stack, interval_li, do_split, split_count)
-        if interval_df is not None:
-            window['-OUTPUT-'].update(interval_df)
+        problem, output_string = run_reductor(problem)
+        if problem.solution["interval_df"] is not None:
+            window['-OUTPUT-'].update(output_string)
         else:
             window['-HARDEN-'].update(disabled=False)
 
@@ -77,7 +79,7 @@ while True:
         disallowed_cases = []
         # window 2 layout - note - must be "new" every time a window is created
         layout2 = [[sg.Text('Select cases that will not be used in the solution')]]
-        for index, row in neighborhoods.iterrows():
+        for index, row in problem.solution["neighborhoods"].iterrows():
             combination = row["combination"]
             wcolor, bcolor = "orange red", "orange red"
             if row["W"]: wcolor = "green"
@@ -86,7 +88,7 @@ while True:
                 sg.Button('W', key=f"W_{index}", button_color=("white", wcolor), disabled = not row["W"]),
                 sg.Button('B', key=f"B_{index}", button_color=("white", bcolor), disabled = not row["B"])])
         layout2.append([sg.Text("Disallowed cases:"), sg.Output(key = '-HARDENED_CASES-', size=(30,3))])
-        layout2.append([sg.Button("Find reductions", key="reduce2")])
+        layout2.append([sg.Button("Find reductions", key="-REDUCE-"), sg.Button("Cancel", key="-CANCEL-")])
         
         window_harden = sg.Window('Window 2', layout2, grab_anywhere=True, finalize=True)
         window_harden.move(window.current_location()[0]+500, window.current_location()[1])
@@ -106,11 +108,13 @@ while True:
                 button.update(button_color = ("white", "red"))
             window_harden["-HARDENED_CASES-"].update(disallowed_cases)
         
-        if event == "reduce2":
+        if event == "-REDUCE-":
             harden_window_active = False
             window_harden.close()
 
             window['-OUTPUT-'].update("Solving hardened problem")
+            
+            neighborhoods = problem.solution["neighborhoods"] 
             
             for change in disallowed_cases:
                 index = int(change[2::])
@@ -118,20 +122,18 @@ while True:
                 neighborhoods.at[index, column] = False
 
             
-            interval_df, neighborhoods, intervals, interval_count = run_reductor(var_stack, interval_li, do_split, split_count, neighborhoods)
-            if interval_df is not None:
-                window['-OUTPUT-'].update(interval_df)
+            problem, output_string = run_reductor(problem, neighborhoods)
+            if problem.solution["interval_df"] is not None:
+                window['-OUTPUT-'].update(output_string)
             else:
                 window['-HARDEN-'].update(disabled=False)
 
 
 
-        if event == 'Exit' or event is None:
+        if event == '-CANCEL-' or event is None:
             # print("Closing window 2", event)
             harden_window_active = False
             window_harden.close()
-        if event == 'Show':
-            sg.popup('You entered ', values['-IN-'])
 
 
 # 4 - the close

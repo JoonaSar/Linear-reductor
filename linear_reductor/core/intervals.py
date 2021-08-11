@@ -1,13 +1,15 @@
-import numpy as np 
-import pandas as pd
-import portion as P 
-import string
 import itertools
 import logging
+import string
 from fractions import Fraction
 from functools import reduce
-from base_logger import logger
+
+import numpy as np
+import pandas as pd
+import portion as P
 from tqdm import tqdm
+
+from base_logger import logger
 
 
 def create_interval_df(interval_list):

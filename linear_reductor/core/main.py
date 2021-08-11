@@ -1,14 +1,15 @@
-import portion as P 
 from fractions import Fraction
 from functools import reduce
-from base_logger import logger
-from solver import find_reductions
-from intervals import interval_list_splitter, create_neighborhoods, create_interval_df, \
-    detect_unions, join_intervals, regular_interval_split, name_gen
+
+import portion as P
 from tqdm import tqdm
 
-
-
+from base_logger import logger
+from intervals import (create_interval_df, create_neighborhoods, detect_unions,
+                       interval_list_splitter, join_intervals, name_gen,
+                       regular_interval_split)
+from solver import find_reductions
+from problem import Problem
 
 # Define some variables
 
@@ -21,7 +22,7 @@ beta = Fraction(10, 10)
 alpha = Fraction(10, 10)
 
 # The set of possible labels
-Sigma_string = "[0, 1/3) U (1/3, 1]"
+Sigma_string = "[0, 1/3) U (2/3, 1]"
 
 # Do you want to split Sigma into smaller parts? This can help in some situations.
 do_split = False
@@ -31,28 +32,23 @@ split_count = 40
 epsilon = 0.0001
 
 
-
-
-def read_sigma(Sigma_string):
-    interval_li = list(map(lambda x: P.from_string(x, conv=Fraction), Sigma_string.split(" U ")))
-    Sigma = reduce(lambda a, b: a | b, interval_li)  
-    logger.info(f"Sigma: {Sigma}")
-    return Sigma, interval_li
-
-Sigma, interval_li = read_sigma(Sigma_string)
-
-var_stack = (d, delta, beta, alpha, epsilon, Sigma)
+p = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
 
 
 
-def run_reductor(var_stack, interval_li, do_split, split_count, neighborhoods = None):
+
+
+
+def run_reductor(problem, neighborhoods = None):
     # Main program running reductions. It first checks for 0-round solutions.
 
-
+    var_stack, interval_li, do_split, split_count = problem.get_parameters()
+    d, delta, beta, alpha, epsilon, Sigma = var_stack
 
     # First check for 0-round solution
     easy_solution_interval = P.closed(Fraction(alpha, delta), Fraction(beta, d))
     easy_solutions = (easy_solution_interval & Sigma)
+    
     if not easy_solutions.empty:
 
         params = {
@@ -73,7 +69,9 @@ def run_reductor(var_stack, interval_li, do_split, split_count, neighborhoods = 
         
     # If reductor is run without neighborhoods-variable, it calculates them using var_stack.
     # Run this with neighborhoods if you're trying to do for example hardening.
+    manual_neighborhoods = True
     if neighborhoods is None:
+        manual_neighborhoods = False
         neighborhoods = create_neighborhoods(intervals, var_stack)
         ready, union_list = detect_unions(neighborhoods, intervals, interval_count, var_stack)
         while not ready:
@@ -91,20 +89,25 @@ def run_reductor(var_stack, interval_li, do_split, split_count, neighborhoods = 
 
     interval_df, neighborhoods = find_reductions(neighborhoods, intervals, interval_count, var_stack)
 
-    print_output(interval_df, neighborhoods, var_stack)
+    output_string = create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods)
 
-    return interval_df, neighborhoods, intervals, interval_count
+    problem.set_solution(interval_df, neighborhoods, manual_neighborhoods)
+
+    print(problem)
+    return problem, output_string
 
 
 
-def print_output(interval_df, neighborhoods, var_stack):
-
+def create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, do_print=True):
+    buffer = []
     if interval_df is None:
-        print("No reductions found.")
-        return
+        buffer.append("No reductions found.")
+        if do_print: print("\n".join(buffer))
+        return buffer
     
-    print("Reductions found.")
-    print(interval_df)
+    buffer.append("Reductions found.")
+    buffer.append(interval_df)
+    buffer.append("\n")
 
     # Translate the problem to round-eliminator formalism. 
     d, delta, beta, alpha, epsilon, Sigma = var_stack
@@ -131,11 +134,15 @@ def print_output(interval_df, neighborhoods, var_stack):
                 white_retor += " ".join(row["combination"])
                 white_retor += "\n"
     
-    
-    print("\nRound eliminator syntax:")
-    print("\n"+black_retor)
-    print("\n"+white_retor)
+    if manual_neighborhoods: buffer.append("Neighborhoods set manually! Original problem is at least as easy as the following.")
+    buffer.append("Round eliminator syntax:")
+    buffer.append("\n" + black_retor)
+    buffer.append("\n" + white_retor)
+
+    output_string = "\n".join(map(lambda x: str(x), buffer))
+    if do_print: print(output_string)
+    return output_string
 
 
 if __name__== "__main__":
-    run_reductor(var_stack, interval_li, do_split, split_count)
+    run_reductor(p)

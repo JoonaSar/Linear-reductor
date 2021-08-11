@@ -1,13 +1,17 @@
-import portion as P 
-import string
-import math
 import logging
+import math
+import string
 from fractions import Fraction
-from scipy.optimize import linprog
-from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable, PULP_CBC_CMD
 from functools import reduce
-from base_logger import logger
+
+import portion as P
+from pulp import (PULP_CBC_CMD, LpMaximize, LpProblem, LpStatus, LpVariable,
+                  lpSum)
+from scipy.optimize import linprog
 from tqdm import tqdm
+
+from base_logger import logger
+
 
 def find_reductions(neighborhoods, intervals, interval_count, var_stack):
     # Find discrete values in given intervals that satisfy all constraints given by neighborhoods.
