@@ -18,11 +18,11 @@ d = 3
 delta = 3
 
 # The treshold for black and white sums
-beta = Fraction(10, 10)
+beta = Fraction(20, 10)
 alpha = Fraction(10, 10)
 
 # The set of possible labels
-Sigma_string = "[0, 1/3) U (2/3, 1]"
+Sigma_string = "[0, 1/3) U (1/3, 1]"
 
 # Do you want to split Sigma into smaller parts? This can help in some situations.
 do_split = False
@@ -32,7 +32,7 @@ split_count = 40
 epsilon = 0.0001
 
 
-p = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
+p = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon, "Problem 2")
 
 
 
@@ -49,23 +49,22 @@ def run_reductor(problem, neighborhoods = None):
     easy_solution_interval = P.closed(Fraction(alpha, delta), Fraction(beta, d))
     easy_solutions = (easy_solution_interval & Sigma)
     
-    if not easy_solutions.empty:
+    """if not easy_solutions.empty:
 
         params = {
             'disj': ' U '
         }
         print("0-round solution found.")
         print(f"Choose any single value from {P.to_string(easy_solutions, **params)}.")
-    
-    # Create neighborhoods if they aren't given already
-    else:
-        print("No 0-round solutions found.")
+    """
+    #else:
+    #print("No 0-round solutions found.")
 
-        if do_split:
-            interval_list = regular_interval_split(interval_li, split_count, var_stack)
-        else:
-            interval_list = interval_li
-        intervals, interval_count = create_interval_df(interval_list) 
+    if do_split:
+        interval_list = regular_interval_split(interval_li, split_count, var_stack)
+    else:
+        interval_list = interval_li
+    intervals, interval_count = create_interval_df(interval_list) 
         
     # If reductor is run without neighborhoods-variable, it calculates them using var_stack.
     # Run this with neighborhoods if you're trying to do for example hardening.
@@ -93,7 +92,7 @@ def run_reductor(problem, neighborhoods = None):
 
     problem.set_solution(interval_df, neighborhoods, manual_neighborhoods)
 
-    print(problem)
+    problem.save_to_dir("./problems/anti-slack/problem_2/")
     return problem, output_string
 
 
