@@ -35,13 +35,19 @@ layout = [[sg.Text('Sigma:', size=(15,1)), sg.Input(key='-IN_SIGMA-', size=(32,1
           [sg.Text('epsilon', size=(15,1)), sg.Input(key='-IN_EPSILON-', default_text=0.0001, size=(32,1))],
           [sg.Text('d, delta:', size=(15,1)), sg.Input(key='-IN_D-', size=(2,1), default_text=3), sg.Input(key='-IN_DELTA-', size=(2,1), default_text=3)],
           [sg.Button('Find reductions', size=(15,1)), sg.Button('Exit', size=(15,1))],
-          [sg.Output(size = (100,10), key = '-OUTPUT-')],
-          [sg.Button("Harden problem", key = "-HARDEN-", size=(15,1), disabled = True)]]
+          [sg.Multiline(size = (100,10), key = '-OUTPUT-')],
+          [sg.Button("Harden problem", key = "-HARDEN-", size=(15,1), disabled = True)],
+          [sg.Text("Enter problem name", size=(20,1)), sg.Input(key="-IN_NAME-", size=(32,1), default_text="Unnamed problem", enable_events=True)],
+          [sg.Multiline(size=(100, 3), key="-PATH_OUTPUT-")],
+          [sg.Input(key="-IN_SAVEFOLDER_FIX-", enable_events = True, visible=False), sg.FolderBrowse('Select save location', key="-IN_SAVEFOLDER-", target="-IN_SAVEFOLDER_FIX-"), sg.Button("Save", key="-SAVE-", size=(15,1), disabled=True)]]
 
 # 2 - the main window
 window = sg.Window('Linear reductor gui', layout, grab_anywhere=True)
 harden_window_active = False
 hardened = False
+# Before allowing save, check that a folder and name are chosen
+folder_chosen, name_chosen = False, False
+
 
 # 3 - the event loop
 i = 0
@@ -50,7 +56,7 @@ while True:
     #if event != sg.TIMEOUT_KEY:
         #print(i, event, values)
         
-    
+
     if event in (None, 'Exit'):
         break
     i+=1
@@ -69,9 +75,9 @@ while True:
         problem = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
 
         problem, output_string = run_reductor(problem)
-        if problem.solution["interval_df"] is not None:
-            window['-OUTPUT-'].update(output_string)
-        else:
+        window['-OUTPUT-'].update(output_string)
+
+        if problem.solution["interval_df"] is None:
             window['-HARDEN-'].update(disabled=False)
 
     if event == '-HARDEN-' and not harden_window_active:     # only run if not already showing a window2
@@ -92,9 +98,32 @@ while True:
         
         window_harden = sg.Window('Window 2', layout2, grab_anywhere=True, finalize=True)
         window_harden.move(window.current_location()[0]+500, window.current_location()[1])
+
+    
+    if event == "-IN_SAVEFOLDER_FIX-":
+        folder_chosen = True
+        filename = "".join(x for x in list(values['-IN_NAME-'].replace(" ", "_")) if x.isalnum() or x=="_").lower()
+        txt = f"Saving the following files: \n{values['-IN_SAVEFOLDER-']}/{filename}/{filename}.md \n{values['-IN_SAVEFOLDER-']}/{filename}/{filename}.json"
+        window["-PATH_OUTPUT-"].update(txt)
+        if folder_chosen and name_chosen:
+            window["-SAVE-"].update(disabled=False)
+
+    if event == "-IN_NAME-":
+        name_chosen = True
+        if values['-IN_NAME-'] == "":
+            window["-PATH_OUTPUT-"].update("Problem name cannot be empty!")
+        else:
+            filename = "".join(x for x in list(values['-IN_NAME-'].replace(" ", "_")) if x.isalnum() or x=="_").lower()
+            txt = f"Saving the following files: \n{values['-IN_SAVEFOLDER-']}/{filename}/{filename}.md \n{values['-IN_SAVEFOLDER-']}/{filename}/{filename}.json"
+            window["-PATH_OUTPUT-"].update(txt)
+        if folder_chosen and name_chosen:
+            window["-SAVE-"].update(disabled=False)
+    
+    if event == "-SAVE-":
+        problem.save_to_dir(values['-IN_SAVEFOLDER-'], values['-IN_NAME-'])
+
     if harden_window_active:
         event, values = window_harden.read(timeout=0)
-        # print("win2 ", event)
         #if event != sg.TIMEOUT_KEY:
             #print("harden_window ", event)
         

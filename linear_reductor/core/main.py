@@ -32,7 +32,7 @@ split_count = 40
 epsilon = 0.0001
 
 
-p = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon, "Problem 2")
+p = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
 
 
 
@@ -49,16 +49,7 @@ def run_reductor(problem, neighborhoods = None):
     easy_solution_interval = P.closed(Fraction(alpha, delta), Fraction(beta, d))
     easy_solutions = (easy_solution_interval & Sigma)
     
-    """if not easy_solutions.empty:
 
-        params = {
-            'disj': ' U '
-        }
-        print("0-round solution found.")
-        print(f"Choose any single value from {P.to_string(easy_solutions, **params)}.")
-    """
-    #else:
-    #print("No 0-round solutions found.")
 
     if do_split:
         interval_list = regular_interval_split(interval_li, split_count, var_stack)
@@ -92,7 +83,6 @@ def run_reductor(problem, neighborhoods = None):
 
     problem.set_solution(interval_df, neighborhoods, manual_neighborhoods)
 
-    problem.save_to_dir("./problems/anti-slack/problem_2/")
     return problem, output_string
 
 
@@ -102,7 +92,7 @@ def create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, d
     if interval_df is None:
         buffer.append("No reductions found.")
         if do_print: print("\n".join(buffer))
-        return buffer
+        return "\n".join(map(lambda x: str(x), buffer))
     
     buffer.append("Reductions found.")
     buffer.append(interval_df)

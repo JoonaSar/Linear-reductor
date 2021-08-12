@@ -9,27 +9,24 @@ import re
 
 class Problem:
 
-    def __init__(self, d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon, name = "Unnamed problem"):
-        # Degrees of black and white nodes
-        self.name = name
+    def __init__(self, d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon):
+
         self.parameters = {}
+
         self.parameters["d"] = d
         self.parameters["delta"] = delta
 
-        # The treshold for black and white sums
         self.parameters["beta"] = beta
         self.parameters["alpha"] = alpha
 
-        # The set of possible labels
         self.parameters["Sigma_string"] = Sigma_string
 
-        # Do you want to split Sigma into smaller parts? This can help in some situations.
         self.parameters["do_split"] = do_split
         self.parameters["split_count"] = split_count
 
-        # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
         self.parameters["epsilon"] = epsilon
         
+        # Solution is set only if one is found
         self.solution = None
     
 
@@ -64,28 +61,28 @@ class Problem:
     def __str__(self):
         return self.toJson()
 
-    def save_to_dir(self, dirpath):
-        #if not os.path.isdir(dirpath):
-        #    raise NotADirectoryError("")
+    def save_to_dir(self, dirpath, savename):
+        if not os.path.isdir(dirpath):
+            raise NotADirectoryError("")
         
-        if self.name == "Unnamed problem": raise Exception("A problem without name cannot be saved")
-        filename = "".join(x for x in list(self.name.replace(" ", "_")) if x.isalnum() or x=="_")
+        filename = "".join(x for x in list(savename.replace(" ", "_")) if x.isalnum() or x=="_").lower()
+        if filename in ["", None]: raise Exception(f"Filename is {savename} not allowed, use alphanumeric characters.")
         try:
             with open(f"{dirpath}/{filename}.md") as f:
                 markdown_file_contents = f.readlines()
                 i = 0
                 while i < len(markdown_file_contents):
                     if "## Notes" in markdown_file_contents[i]: break
+                    i += 1
+                    
+                notes = "".join(markdown_file_contents[i::])
                 
-                notes = "\n".join(markdown_file_contents[i::])
         except:
             notes = "## Notes"
-        
-
 
         a = r"\a"
         b = r"\b"
-        name = self.name.replace("_", " ").capitalize()
+        name = savename.replace("_", " ").capitalize()
         sigma = self.parameters["Sigma_string"].replace("U", r"\cup")
 
         splits = "No splits"
@@ -108,7 +105,7 @@ class Problem:
                 interval_df_str += re.sub('Fraction\(([0-9]+), ([0-9]+)\),Fraction\(([0-9]+), ([0-9]+)\)', r'\1/\2, \3/\4', str(row["interval"]))
                 interval_df_str += "$ | $" + str(row["reduction"]) +"$\n"
 
-            white_retor = "RE-formalism:\n"
+            white_retor = "```\nRE-formalism:\n"
             black_retor = ""
             for index, row in self.solution["neighborhoods"].iterrows():
                 if row["W"]:
@@ -120,7 +117,11 @@ class Problem:
 
             black_retor += "```"
 
-        print(f"""# {name}
+        
+        md_path = f"{dirpath}/{filename}/{filename}.md"
+        os.makedirs(f"{dirpath}/{filename}", exist_ok=True)
+        with open(md_path, "w") as f:
+            f.write(f"""# {name}
 
 ## Problem setting
 - $d, \delta = {self.parameters["d"]}, \; {self.parameters["delta"]}$
@@ -142,6 +143,11 @@ class Problem:
 
 {notes}
 """)
+        json_path = f"{dirpath}/{filename}/{filename}.json"
+        with open(json_path, "w") as f:
+            f.write(self.toJson())
+        
+            
 
 
 def read_sigma(Sigma_string):
