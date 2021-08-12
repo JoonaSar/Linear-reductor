@@ -24,6 +24,9 @@ ch = GuiHandler()
 formatter = logging.Formatter('%(levelname)s: %(message)s')
 ch.setFormatter(formatter)
 
+# Disable all logs at start, as default value for logging level is OFF
+logging.disable()
+
 logger.addHandler(ch)
 
 
@@ -34,7 +37,8 @@ layout = [[sg.Text('Sigma:', size=(15,1)), sg.Input(key='-IN_SIGMA-', size=(32,1
           [sg.Text('(Beta) Passive <=', size=(15,1)), sg.Input(key='-IN_BETA-', size=(32,1), default_text="1")],
           [sg.Text('epsilon', size=(15,1)), sg.Input(key='-IN_EPSILON-', default_text=0.0001, size=(32,1))],
           [sg.Text('d, delta:', size=(15,1)), sg.Input(key='-IN_D-', size=(2,1), default_text=3), sg.Input(key='-IN_DELTA-', size=(2,1), default_text=3)],
-          [sg.Button('Find reductions', size=(15,1)), sg.Button('Exit', size=(15,1))],
+          [sg.Checkbox("Make splits", key='-IN_DO_SPLITS-'), sg.Input(key='-IN_SPLIT_COUNT-', size=(4,1), default_text=6)],
+          [sg.Button('Find reductions', size=(15,1)), sg.Button('Exit', size=(15,1)), sg.Text("Logging level"), sg.Combo(["OFF", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default_value="OFF", key = "-IN_DEBUG-", enable_events = True)],
           [sg.Multiline(size = (100,10), key = '-OUTPUT-')],
           [sg.Button("Harden problem", key = "-HARDEN-", size=(15,1), disabled = True)],
           [sg.Text("Enter problem name", size=(20,1)), sg.Input(key="-IN_NAME-", size=(32,1), default_text="Unnamed problem", enable_events=True)],
@@ -99,6 +103,14 @@ while True:
         window_harden = sg.Window('Window 2', layout2, grab_anywhere=True, finalize=True)
         window_harden.move(window.current_location()[0]+500, window.current_location()[1])
 
+    if event == "-IN_DEBUG-":
+        mapper = {"DEBUG":logging.DEBUG, "INFO":logging.INFO, "WARNING":logging.WARNING, "ERROR":logging.ERROR, "CRITICAL":logging.CRITICAL}
+        level = values["-IN_DEBUG-"]
+        if level == "OFF":
+            logging.disable()
+        else:
+            logging.disable(logging.NOTSET)
+            logger.setLevel(mapper[level])
     
     if event == "-IN_SAVEFOLDER_FIX-":
         folder_chosen = True
@@ -120,7 +132,8 @@ while True:
             window["-SAVE-"].update(disabled=False)
     
     if event == "-SAVE-":
-        problem.save_to_dir(values['-IN_SAVEFOLDER-'], values['-IN_NAME-'])
+        if problem.save_to_dir(values['-IN_SAVEFOLDER-'], values['-IN_NAME-']):
+            window["-PATH_OUTPUT-"].update("Problem saved!")
 
     if harden_window_active:
         event, values = window_harden.read(timeout=0)

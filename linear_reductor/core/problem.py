@@ -117,11 +117,11 @@ class Problem:
 
             black_retor += "```"
 
-        
-        md_path = f"{dirpath}/{filename}/{filename}.md"
-        os.makedirs(f"{dirpath}/{filename}", exist_ok=True)
-        with open(md_path, "w") as f:
-            f.write(f"""# {name}
+        try:
+            md_path = f"{dirpath}/{filename}/{filename}.md"
+            os.makedirs(f"{dirpath}/{filename}", exist_ok=True)
+            with open(md_path, "w") as f:
+                f.write(f"""# {name}
 
 ## Problem setting
 - $d, \delta = {self.parameters["d"]}, \; {self.parameters["delta"]}$
@@ -143,9 +143,15 @@ class Problem:
 
 {notes}
 """)
-        json_path = f"{dirpath}/{filename}/{filename}.json"
-        with open(json_path, "w") as f:
-            f.write(self.toJson())
+            json_path = f"{dirpath}/{filename}/{filename}.json"
+            with open(json_path, "w") as f:
+                f.write(self.toJson())
+
+            # Return true if everything was saved
+            return True
+        except:
+            return False
+        
         
             
 
