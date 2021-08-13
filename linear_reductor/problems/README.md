@@ -31,45 +31,27 @@ Problems are listed in a directory in the following format:
  ┗ 📜README.md
 ```
 
-Each problem directory contains one human readable markdown file and one JSON-file of the following format:
-```
-File
- ┣ name                         // string
- ┣ parameters
- ┃ ┣ d                          // int 
- ┃ ┣ delta                      // int
- ┃ ┣ beta                       // [numerator, denominator], int, int
- ┃ ┣ alpha                      // [numerator, denominator], int, int
- ┃ ┣ Sigma_string               // string
- ┃ ┣ do_split                   // bool
- ┃ ┣ split_count                // int
- ┃ ┗ epsilon                    // float
- ┗ Solution
- ┃ ┣ interval_df                // dict (interval dataframe)
- ┃ ┣ neighborhoods              // dict (neighborhoods dataframe)
- ┃ ┗ manual_neighborhoods       // bool
-```
-
-Examples of interval and neighborhoods dataframes:<br>
-
-
-$\;$| Interval | Reduction
-----|---------|---------
-A |$[0, 1/3)$ | $0.16661667$
-B |$(2/3, 1]$ | $0.66676667$
-
-<br><br>
-
-$\;$| W | B
-----|---|--
-A A A | `false` | `true`
-A A B | `true` | `true`
-A B B | `true` | `false`
-B B B | `true` | `false`
-
-
+Each problem directory contains one human readable markdown file describing the problem, and one computer-readable file containing the problem as a pickled object.
 
 ## Generating and commenting problems
 
 Problems can be generated using the graphical UI. Enter the problem parameters, hit "Find reductions", and harden the problem if you want to. The proper save directory should automatically be determined according to the `slack/exact/anti-slack`-category of your problem, but this can be changed. When saving, remember to give the problem a name.
+
+Problems can also be generated using the command line interface to the program. Run the `main.py` with `-h` flag for instructions:
+```
+usage: main.py [-h] [-d level] [-l path] [-p path] [-s path name]
+
+Reduce continuous covering-packing problems to LCL:s.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d level, --debug level
+                        select debugging level from (D)EBUG, (I)NFO, (W)ARNING, (E)RROR, (C)RITICAL
+  -l path, --logpath path
+                        specify a path for logfile. Otherwise logs are printed to console
+  -p path, --path path  specify an input path to a json file containing the problem
+  -s path name, --save path name
+                        specify a path and name for saving the problem directory
+```
+
 Anything written after `## Notes` in the human readable markdown-files is preserved. All other markings are overwritten each time the problem files are rewritten, which you might want to do if a new discretization is found to an old problem.

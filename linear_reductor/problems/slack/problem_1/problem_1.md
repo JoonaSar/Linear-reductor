@@ -1,9 +1,9 @@
-# Problem 6
+# Problem 1
 
 ## Problem setting
 - $d, \delta = 3, \; 3$
 - $\alpha=1$
-- $\beta=1$
+- $\beta=2$
 - $\Sigma=3$
 - No splits
 - $\epsilon = 0.0001$
@@ -27,6 +27,7 @@ B B B
 
 A A A
 A A B
+A B B
 ```
 
 ## Notes

@@ -7,6 +7,7 @@ import portion as P
 import re
 import sys
 from base_logger import logger
+import pickle
 
 
 class Problem:
@@ -63,14 +64,33 @@ class Problem:
     def __str__(self):
         return self.toJson()
 
-    def save_to_dir(self, dirpath, savename):
+    def save(self, dirpath, savename):
         if not dirpath.is_dir():
             raise NotADirectoryError()
         
         filename = "".join(x for x in list(savename.replace(" ", "_")) if x.isalnum() or x=="_").lower()
         if filename in ["", None]: raise Exception(f"Filename {savename} is not allowed, use alphanumeric characters.")
+        
         try:
-            md_path = dirpath / filename / f"{filename}.md"
+            directory = (dirpath / filename)
+            directory.mkdir(parents = True, exist_ok = True)
+
+        except Exception as e:
+            return False, e
+           
+        md_saved, md_msg = self.save_md(directory, filename, savename)
+        pickle_saved, pickle_msg = self.save_pickle(directory, filename)
+        # Return true if everything was saved
+        if md_saved and pickle_saved:
+            return True, None
+        return False, str(md_msg) + "\n" + str(pickle_msg)
+        
+    def save_md(self, directory, filename, savename):
+        # This will save the human readable problem to the given directory
+
+        # Try to read existing .md file for any notes
+        md_path = directory / f"{filename}.md"
+        try:
             with md_path.open(mode="r") as f:
                 markdown_file_contents = f.readlines()
                 i = 0
@@ -118,11 +138,9 @@ class Problem:
                     black_retor += "\n"
 
             black_retor += "```"
-
+        
+        # Try to write the .md file
         try:
-            # Try to write the files
-            md_path = dirpath / filename / f"{filename}.md"
-            md_path.parent.mkdir(parents = True, exist_ok = True)
             with md_path.open(mode="w") as f:
                 logger.debug(f"Writing markdown file to {md_path}")
                 f.write(f"""# {name}
@@ -131,7 +149,7 @@ class Problem:
 - $d, \delta = {self.parameters["d"]}, \; {self.parameters["delta"]}$
 - ${a}lpha={self.parameters["alpha"]}$
 - ${b}eta={self.parameters["beta"]}$
-- $\Sigma={self.parameters["d"]}$
+- $\Sigma={self.parameters["Sigma"]}$
 - {splits}
 - $\epsilon = {self.parameters["epsilon"]}$
 
@@ -146,19 +164,39 @@ class Problem:
 {black_retor}
 
 {notes}
-""")
-            json_path = dirpath / filename / f"{filename}.json"
-            with json_path.open(mode="w") as f:
-                logger.debug(f"Writing json file to {json_path}")
-                f.write(self.toJson())
-
-            # Return true if everything was saved
-            return True, None
+""")          
         except Exception as e:
             logger.debug(e)
             return False, e
-        
-        
+
+        return True, None      
+
+    def save_pickle(self, directory, filename):
+        pickle_path = directory / f"{filename}.pickle"
+        try:
+            with open(pickle_path, "wb") as f:
+                pickle.dump(self, f)
+            return True, None        
+        except Exception as e:
+            logger.debug(e)
+            return False, e
+
+    def is_valid_problem(self):
+        # Not implemented yet. 
+        # Checks to see that problem is not corrupted after unpickling.
+        return True
+
+def load_problem(loadpath):
+    try:
+        with open(loadpath, "rb") as f:
+            p = pickle.load(f)
+        return p, None        
+    except Exception as e:
+        logger.debug(e)
+        return None, e
+
+
+
             
 
 

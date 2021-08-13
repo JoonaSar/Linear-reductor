@@ -68,8 +68,8 @@ def update_save_path_view(savename = "Unnamed problem"):
     else:
         filename = "".join(x for x in list(savename.replace(" ", "_")) if x.isalnum() or x=="_").lower()
         md_path = save_path / filename / f"{filename}.md"
-        json_path = save_path / filename / f"{filename}.json"
-        txt = f"Saving will create the following files: \n{md_path}\n{json_path}\nAnything that wasn't stored after ## Notes in the markdown file will be lost."
+        pickle_path = save_path / filename / f"{filename}.pickle"
+        txt = f"Saving will create the following files: \n{md_path}\n{pickle_path}\nAnything that wasn't stored after ## Notes in the markdown file will be lost."
         window["-PATH_OUTPUT-"].update(txt)
 
         
@@ -176,7 +176,7 @@ while True:
         update_save_path_view(values['-IN_NAME-'])
     
     if event == "-SAVE-":
-        saved, error_code = problem.save_to_dir(save_path, values['-IN_NAME-'])
+        saved, error_code = problem.save(save_path, values['-IN_NAME-'])
         if saved:
             window["-PATH_OUTPUT-"].update("Problem saved succesfully!")
         else: 

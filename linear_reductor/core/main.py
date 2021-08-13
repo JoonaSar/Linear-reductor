@@ -4,15 +4,17 @@ from functools import reduce
 import portion as P
 from tqdm import tqdm
 
+from pathlib import Path
 from base_logger import logger
 import logging
 from intervals import (create_interval_df, create_neighborhoods, detect_unions,
                        interval_list_splitter, join_intervals, name_gen,
                        regular_interval_split)
 from solver import find_reductions
-from problem import Problem
+from problem import Problem, load_problem
 import sys 
 import argparse
+import pickle
 
 def create_test_problem():
     # Creates a dummy problem if the program is called without any input
@@ -136,15 +138,30 @@ def create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, d
     return output_string
 
 
-if __name__== "__main__":
+def main():
     # Create argument parser for CLI calls
     my_parser = argparse.ArgumentParser(description='Reduce continuous covering-packing problems to LCL:s.')
 
-    my_parser.add_argument("-debug", "-d",
+    my_parser.add_argument("-d", "--debug",
                         type = str,
-                        nargs = "?",
-                        help = "select debugging level from (D)EBUG, (I)NFO, (W)ARNING, (E)RROR, (C)RITICAL.")
-
+                        nargs = 1,
+                        metavar='level',
+                        help = "select debugging level from (D)EBUG, (I)NFO, (W)ARNING, (E)RROR, (C)RITICAL")
+    my_parser.add_argument("-l", "--logpath",
+                        type = str,
+                        nargs = 1,
+                        metavar='path',
+                        help = "specify a path for logfile. Otherwise logs are printed to console")
+    my_parser.add_argument("-p", "--path",
+                        type = str,
+                        nargs = 1,
+                        metavar='path',
+                        help = "specify an input path to a json file containing the problem")
+    my_parser.add_argument("-s", "--save",
+                        type = str,
+                        nargs = 2,
+                        metavar=('path', 'name'),
+                        help = "specify a path and name for saving the problem directory")
     args = my_parser.parse_args()
 
     # Disable logs as default
@@ -154,23 +171,23 @@ if __name__== "__main__":
         # Enable logging if -d flag is passed with a proper level
         logging.disable(logging.NOTSET)
 
-        if args.debug.upper() in ["D", "DEBUG"]:
+        if args.debug[0].upper() in ["D", "DEBUG"]:
             print("Selected debugging level: DEBUG")
             logger.setLevel(logging.DEBUG)
 
-        elif args.debug.upper() in ["I", "INFO"]:
+        elif args.debug[0].upper() in ["I", "INFO"]:
             print("Selected debugging level: INFO")
             logger.setLevel(logging.INFO)
 
-        elif args.debug.upper() in ["W", "WARNING"]:
+        elif args.debug[0].upper() in ["W", "WARNING"]:
             print("Selected debugging level: WARNING")
             logger.setLevel(logging.WARNING)
 
-        elif args.debug.upper() in ["E", "ERROR"]:
+        elif args.debug[0].upper() in ["E", "ERROR"]:
             print("Selected debugging level: ERROR")
             logger.setLevel(logging.ERROR)
 
-        elif args.debug.upper() in ["C", "CRITICAL"]:
+        elif args.debug[0].upper() in ["C", "CRITICAL"]:
             print("Selected debugging level: CRITICAL")
             logger.setLevel(logging.CRITICAL)
 
@@ -178,6 +195,43 @@ if __name__== "__main__":
             print(f'Argument "{args.debug}" is not a valid logging level!')
             logging.disable()
     
-    p = create_test_problem()
-    run_reductor(p)
+    if args.logpath is not None:
+        # Send logs to logpath aswell as console
+        fh = logging.FileHandler(Path(args.logpath[0]))
+        logger.handlers = []
+        fh.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+        logger.addHandler(fh)
+
+    save = False
+    if args.save is not None:
+        # Save the problem at the specified path
+        if not Path(args.save[0]).is_dir():
+            print(f"Save directory {Path(args.save[0])} was not found. Problem will not be saved.")
+        else:
+            print(f"Problem will be saved to {Path(args.save[0]).resolve()} with name {args.save[1]}.")
+            save = True
+
+    if args.path is not None:
+        # Load the problem described at path
+        if not Path(args.path[0]).is_file():
+            print(f"No file found at {Path(args.save[0])}. Exiting program.")
+            return
+        else:
+            p, message= load_problem(args.path[0])
+            if p is None:
+                print(e)
+                print(f"No problem was found at the file in {args.path[0]}. Exiting program.")
+                return
+            if not p.is_valid_problem():
+                print(f"Problem was found, but it was corrupted. Exiting program.")
+                return
+    else:
+        p = create_test_problem()
+
+    problem, output_string = run_reductor(p)
+
+    #if save:
+    #   problem.save(Path(args.save[0]), args.save[1])
     
+if __name__== "__main__":
+    main()
