@@ -69,7 +69,7 @@ B B B | `true` | `false`
 
 
 
-## Generating problems
+## Generating and commenting problems
 
-
-Anything written after `## Notes` in the human readable markdown-files is preserved. All other markings are overwritten each time the problem files are saved there.
+Problems can be generated using the graphical UI. Enter the problem parameters, hit "Find reductions", and harden the problem if you want to. The proper save directory should automatically be determined according to the `slack/exact/anti-slack`-category of your problem, but this can be changed. When saving, remember to give the problem a name.
+Anything written after `## Notes` in the human readable markdown-files is preserved. All other markings are overwritten each time the problem files are rewritten, which you might want to do if a new discretization is found to an old problem.

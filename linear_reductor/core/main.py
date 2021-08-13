@@ -5,41 +5,44 @@ import portion as P
 from tqdm import tqdm
 
 from base_logger import logger
+import logging
 from intervals import (create_interval_df, create_neighborhoods, detect_unions,
                        interval_list_splitter, join_intervals, name_gen,
                        regular_interval_split)
 from solver import find_reductions
 from problem import Problem
+import sys 
+import argparse
 
-# Define some variables
+def create_test_problem():
+    # Creates a dummy problem if the program is called without any input
 
-# Degrees of black and white nodes
-d = 3
-delta = 3
+    # Degrees of black and white nodes
+    d = 3
+    delta = 3
 
-# The treshold for black and white sums
-beta = Fraction(20, 10)
-alpha = Fraction(10, 10)
+    # The treshold for black and white sums
+    beta = Fraction(20, 10)
+    alpha = Fraction(10, 10)
 
-# The set of possible labels
-Sigma_string = "[0, 1/3) U (1/3, 1]"
+    # The set of possible labels
+    Sigma_string = "[0, 1/3) U (1/3, 1]"
 
-# Do you want to split Sigma into smaller parts? This can help in some situations.
-do_split = False
-split_count = 40
+    # Do you want to split Sigma into smaller parts? This can help in some situations.
+    do_split = False
+    split_count = 40
 
-# Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
-epsilon = 0.0001
-
-
-p = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
-
-
+    # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
+    epsilon = 0.0001
 
 
+    p = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
+    return p
 
 
-def run_reductor(problem, neighborhoods = None):
+
+
+def run_reductor(problem, neighborhoods = None, do_print = True):
     # Main program running reductions. It first checks for 0-round solutions.
 
     var_stack, interval_li, do_split, split_count = problem.get_parameters()
@@ -79,7 +82,7 @@ def run_reductor(problem, neighborhoods = None):
 
     interval_df, neighborhoods = find_reductions(neighborhoods, intervals, interval_count, var_stack)
 
-    output_string = create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods)
+    output_string = create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, do_print)
 
     problem.set_solution(interval_df, neighborhoods, manual_neighborhoods)
 
@@ -134,4 +137,47 @@ def create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, d
 
 
 if __name__== "__main__":
+    # Create argument parser for CLI calls
+    my_parser = argparse.ArgumentParser(description='Reduce continuous covering-packing problems to LCL:s.')
+
+    my_parser.add_argument("-debug", "-d",
+                        type = str,
+                        nargs = "?",
+                        help = "select debugging level from (D)EBUG, (I)NFO, (W)ARNING, (E)RROR, (C)RITICAL.")
+
+    args = my_parser.parse_args()
+
+    # Disable logs as default
+    logging.disable()
+
+    if args.debug is not None:
+        # Enable logging if -d flag is passed with a proper level
+        logging.disable(logging.NOTSET)
+
+        if args.debug.upper() in ["D", "DEBUG"]:
+            print("Selected debugging level: DEBUG")
+            logger.setLevel(logging.DEBUG)
+
+        elif args.debug.upper() in ["I", "INFO"]:
+            print("Selected debugging level: INFO")
+            logger.setLevel(logging.INFO)
+
+        elif args.debug.upper() in ["W", "WARNING"]:
+            print("Selected debugging level: WARNING")
+            logger.setLevel(logging.WARNING)
+
+        elif args.debug.upper() in ["E", "ERROR"]:
+            print("Selected debugging level: ERROR")
+            logger.setLevel(logging.ERROR)
+
+        elif args.debug.upper() in ["C", "CRITICAL"]:
+            print("Selected debugging level: CRITICAL")
+            logger.setLevel(logging.CRITICAL)
+
+        else:
+            print(f'Argument "{args.debug}" is not a valid logging level!')
+            logging.disable()
+    
+    p = create_test_problem()
     run_reductor(p)
+    
