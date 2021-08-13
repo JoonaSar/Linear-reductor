@@ -1,10 +1,12 @@
 import json
 from fractions import Fraction
 from functools import reduce
-import os
+from pathlib import Path
 import pandas as pd
 import portion as P
 import re
+import sys
+from base_logger import logger
 
 
 class Problem:
@@ -62,13 +64,14 @@ class Problem:
         return self.toJson()
 
     def save_to_dir(self, dirpath, savename):
-        if not os.path.isdir(dirpath):
-            raise NotADirectoryError("")
+        if not dirpath.is_dir():
+            raise NotADirectoryError()
         
         filename = "".join(x for x in list(savename.replace(" ", "_")) if x.isalnum() or x=="_").lower()
-        if filename in ["", None]: raise Exception(f"Filename is {savename} not allowed, use alphanumeric characters.")
+        if filename in ["", None]: raise Exception(f"Filename {savename} is not allowed, use alphanumeric characters.")
         try:
-            with open(f"{dirpath}/{filename}.md") as f:
+            md_path = dirpath / filename / f"{filename}.md"
+            with md_path.open(mode="r") as f:
                 markdown_file_contents = f.readlines()
                 i = 0
                 while i < len(markdown_file_contents):
@@ -79,7 +82,6 @@ class Problem:
                 
         except:
             notes = "## Notes"
-
         a = r"\a"
         b = r"\b"
         name = savename.replace("_", " ").capitalize()
@@ -118,9 +120,11 @@ class Problem:
             black_retor += "```"
 
         try:
-            md_path = f"{dirpath}/{filename}/{filename}.md"
-            os.makedirs(f"{dirpath}/{filename}", exist_ok=True)
-            with open(md_path, "w") as f:
+            # Try to write the files
+            md_path = dirpath / filename / f"{filename}.md"
+            md_path.parent.mkdir(parents = True, exist_ok = True)
+            with md_path.open(mode="w") as f:
+                logger.debug(f"Writing markdown file to {md_path}")
                 f.write(f"""# {name}
 
 ## Problem setting
@@ -143,14 +147,16 @@ class Problem:
 
 {notes}
 """)
-            json_path = f"{dirpath}/{filename}/{filename}.json"
-            with open(json_path, "w") as f:
+            json_path = dirpath / filename / f"{filename}.json"
+            with json_path.open(mode="w") as f:
+                logger.debug(f"Writing json file to {json_path}")
                 f.write(self.toJson())
 
             # Return true if everything was saved
-            return True
-        except:
-            return False
+            return True, None
+        except Exception as e:
+            logger.debug(e)
+            return False, e
         
         
             
