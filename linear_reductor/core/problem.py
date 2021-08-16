@@ -88,24 +88,29 @@ class Problem:
     def save_md(self, directory, filename, savename):
         # This will save the human readable problem to the given directory
 
-        # Try to read existing .md file for any notes
+        # Try to read existing .md file in order to copy any notes
         md_path = directory / f"{filename}.md"
+        notes = "## Notes"
         try:
             with md_path.open(mode="r") as f:
                 markdown_file_contents = f.readlines()
                 i = 0
+                found = False
                 while i < len(markdown_file_contents):
-                    if "## Notes" in markdown_file_contents[i]: break
+                    if "## Notes" in markdown_file_contents[i]: 
+                        found = True
+                        break
                     i += 1
-                    
-                notes = "".join(markdown_file_contents[i::])
-                
+                if found: notes = "".join(markdown_file_contents[i::])
         except:
-            notes = "## Notes"
+            # There is no file that would be overwritten
+            pass
+
         a = r"\a"
         b = r"\b"
         name = savename.replace("_", " ").capitalize()
         sigma = self.parameters["Sigma_string"].replace("U", r"\cup")
+
 
         splits = "No splits"
         if self.parameters["do_split"]:
@@ -124,7 +129,9 @@ class Problem:
             interval_df_str = "$\;$| Interval | Reduction\n----|---------|---------\n"
             for index, row in interval_df.iterrows():
                 interval_df_str += f"{str(index)} | $" 
-                interval_df_str += re.sub('Fraction\(([0-9]+), ([0-9]+)\),Fraction\(([0-9]+), ([0-9]+)\)', r'\1/\2, \3/\4', str(row["interval"]))
+                interval_str = re.sub('Fraction\(([0-9]+), ([0-9]+)\),Fraction\(([0-9]+), ([0-9]+)\)', r'\1/\2, \3/\4', str(row["interval"]))
+                interval_str = interval_str.replace("|", "\cup")
+                interval_df_str += interval_str
                 interval_df_str += "$ | $" + str(row["reduction"]) +"$\n"
 
             white_retor = "```\nRE-formalism:\n"
@@ -149,7 +156,7 @@ class Problem:
 - $d, \delta = {self.parameters["d"]}, \; {self.parameters["delta"]}$
 - ${a}lpha={self.parameters["alpha"]}$
 - ${b}eta={self.parameters["beta"]}$
-- $\Sigma={self.parameters["Sigma"]}$
+- $\Sigma={self.parameters["Sigma_string"]}$
 - {splits}
 - $\epsilon = {self.parameters["epsilon"]}$
 

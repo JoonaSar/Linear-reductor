@@ -25,7 +25,8 @@ def create_interval_df(interval_list):
 
 
 
-def create_neighborhoods(intervals, var_stack):
+def create_neighborhoods(intervals, var_stack, do_print):
+    
     # Create all of the possible neighborhoods that could exist, and check which of them could surround active or passive nodes (B/W).
     # If d =/= delta, it's not possible for a neighborhood to be suitable for both nodes.
 
@@ -55,7 +56,7 @@ def create_neighborhoods(intervals, var_stack):
 
     # Then calculate the intervals, that the sum of these neighborhoods could have. 
     # If they contain any values suitable for active/passive nodes, the neighbourhood is considered as suitable for that color.
-    for index, row in tqdm(neighborhoods.iterrows(), total = neighborhoods.shape[0], desc = "Creating neighborhood table", delay = 0.5):
+    for index, row in tqdm(neighborhoods.iterrows(), total = neighborhoods.shape[0], desc = "Creating neighborhood table", delay = 0.5, disable = not do_print):
         interval = sum_intervals(row["combination"], list(map(lambda x: intervals.loc[x, "interval"], row["combination"])))
         
         c = " ".join(row["combination"])
@@ -80,9 +81,9 @@ def create_neighborhoods(intervals, var_stack):
 
 
 
-def detect_unions(neighborhoods, intervals, interval_count, var_stack):
+def detect_unions(neighborhoods, intervals, interval_count, var_stack, do_print):
     # Detect intervals in combinations-table that could be joined without breaking labelings.
-    # This can happen in two cases: If two intervals have exactly the same rows, or rows of one interval is a strict subset of the other.
+    # This can happen in two cases: If two intervals have exactly the same rows, or rows of one interval is a subset of the other.
     # Using a single discretization value for them can enable discretization.
    
     # This is a brute force solution, any smarter ideas are welcome.
@@ -100,7 +101,7 @@ def detect_unions(neighborhoods, intervals, interval_count, var_stack):
     join_found = False
     join_ended = False
 
-    for pair in tqdm(pairs, desc = "Searching for unions", delay = 0.5):
+    for pair in tqdm(pairs, desc = "Searching for unions", delay = 0.5, disable = not do_print):
         # Handle at most one joinable set in each round, so that two joins don't break each other,
         # eg. AB is a join if intervals C and D are not joined, and CD can be joined if A and B aren't.
         

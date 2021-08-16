@@ -5,7 +5,8 @@ import portion as P
 from tqdm import tqdm
 
 from pathlib import Path
-from base_logger import logger
+import logging
+from base_logger import logger, TqdmLoggingHandler
 import logging
 from intervals import (create_interval_df, create_neighborhoods, detect_unions,
                        interval_list_splitter, join_intervals, name_gen,
@@ -24,14 +25,14 @@ def create_test_problem():
     delta = 3
 
     # The treshold for black and white sums
-    beta = Fraction(20, 10)
+    beta = Fraction(10, 10)
     alpha = Fraction(10, 10)
 
     # The set of possible labels
     Sigma_string = "[0, 1/3) U (1/3, 1]"
 
     # Do you want to split Sigma into smaller parts? This can help in some situations.
-    do_split = False
+    do_split = True
     split_count = 40
 
     # Value used to handle strict inequalities in calculations. Can affect possible results. (We approximate a<b  <=> a<=b-epsilon <=> b>= a+epsilon.)
@@ -67,14 +68,14 @@ def run_reductor(problem, neighborhoods = None, do_print = True):
     manual_neighborhoods = True
     if neighborhoods is None:
         manual_neighborhoods = False
-        neighborhoods = create_neighborhoods(intervals, var_stack)
-        ready, union_list = detect_unions(neighborhoods, intervals, interval_count, var_stack)
+        neighborhoods = create_neighborhoods(intervals, var_stack, do_print)
+        ready, union_list = detect_unions(neighborhoods, intervals, interval_count, var_stack, do_print)
         while not ready:
             logger.info(f"Joining intervals: {union_list}")
             interval_list = join_intervals(intervals, union_list)
             intervals, interval_count = create_interval_df(interval_list) 
-            neighborhoods = create_neighborhoods(intervals, var_stack)
-            ready, union_list = detect_unions(neighborhoods, intervals, interval_count, var_stack)
+            neighborhoods = create_neighborhoods(intervals, var_stack, do_print)
+            ready, union_list = detect_unions(neighborhoods, intervals, interval_count, var_stack, do_print)
         
     else:
         logger.debug("Running reductor with manual neighborhoods table:")
@@ -96,7 +97,7 @@ def create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, d
     buffer = []
     if interval_df is None:
         buffer.append("No reductions found.")
-        if do_print: print("\n".join(buffer))
+        if do_print: tqdm.write("\n".join(buffer))
         return "\n".join(map(lambda x: str(x), buffer))
     
     buffer.append("Reductions found.")
@@ -134,7 +135,7 @@ def create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, d
     buffer.append("\n" + white_retor)
 
     output_string = "\n".join(map(lambda x: str(x), buffer))
-    if do_print: print(output_string)
+    if do_print: tqdm.write(output_string)
     return output_string
 
 
@@ -172,63 +173,70 @@ def main():
         logging.disable(logging.NOTSET)
 
         if args.debug[0].upper() in ["D", "DEBUG"]:
-            print("Selected debugging level: DEBUG")
+            tqdm.write("Selected debugging level: DEBUG")
             logger.setLevel(logging.DEBUG)
 
         elif args.debug[0].upper() in ["I", "INFO"]:
-            print("Selected debugging level: INFO")
+            tqdm.write("Selected debugging level: INFO")
             logger.setLevel(logging.INFO)
 
         elif args.debug[0].upper() in ["W", "WARNING"]:
-            print("Selected debugging level: WARNING")
+            tqdm.write("Selected debugging level: WARNING")
             logger.setLevel(logging.WARNING)
 
         elif args.debug[0].upper() in ["E", "ERROR"]:
-            print("Selected debugging level: ERROR")
+            tqdm.write("Selected debugging level: ERROR")
             logger.setLevel(logging.ERROR)
 
         elif args.debug[0].upper() in ["C", "CRITICAL"]:
-            print("Selected debugging level: CRITICAL")
+            tqdm.write("Selected debugging level: CRITICAL")
             logger.setLevel(logging.CRITICAL)
 
         else:
-            print(f'Argument "{args.debug}" is not a valid logging level!')
+            tqdm.write(f'Argument "{args.debug}" is not a valid logging level!')
             logging.disable()
     
     if args.logpath is not None:
-        # Send logs to logpath aswell as console
+        # Send logs to logpath aswell instead of console
         fh = logging.FileHandler(Path(args.logpath[0]))
-        logger.handlers = []
         fh.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
         logger.addHandler(fh)
+    else:
+        # Create console handler that works with tqdm (progress bars)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+        ch = TqdmLoggingHandler()
+        ch.setFormatter(formatter)
+
+        logger.handlers = []
+        logger.addHandler(ch)
 
     save = False
     if args.save is not None:
         # Save the problem at the specified path
         if not Path(args.save[0]).is_dir():
-            print(f"Save directory {Path(args.save[0])} was not found. Problem will not be saved.")
+            tqdm.write(f"Save directory {Path(args.save[0])} was not found. Problem will not be saved.")
         else:
-            print(f"Problem will be saved to {Path(args.save[0]).resolve()} with name {args.save[1]}.")
+            tqdm.write(f"Problem will be saved to {Path(args.save[0]).resolve()} with name {args.save[1]}.")
             save = True
 
     if args.path is not None:
         # Load the problem described at path
         if not Path(args.path[0]).is_file():
-            print(f"No file found at {Path(args.save[0])}. Exiting program.")
+            tqdm.write(f"No file found at {Path(args.path[0])}. Exiting program.")
             return
         else:
             p, message= load_problem(args.path[0])
             if p is None:
-                print(e)
-                print(f"No problem was found at the file in {args.path[0]}. Exiting program.")
+                tqdm.write(message)
+                tqdm.write(f"No problem was found at the file in {args.path[0]}. Exiting program.")
                 return
             if not p.is_valid_problem():
-                print(f"Problem was found, but it was corrupted. Exiting program.")
+                tqdm.write(f"Problem was found, but it was corrupted. Exiting program.")
                 return
     else:
         p = create_test_problem()
 
-    problem, output_string = run_reductor(p)
+    problem, output_string = run_reductor(p, do_print=True)
 
     #if save:
     #   problem.save(Path(args.save[0]), args.save[1])
