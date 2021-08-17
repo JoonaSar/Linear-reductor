@@ -4,7 +4,7 @@
 - $d, \delta = 3, \; 3$
 - $\alpha=1$
 - $\beta=1$
-- $\Sigma=3$
+- $\Sigma=[0, 1/3) \cup (1/3, 1]$
 - No splits
 - $\epsilon = 0.0001$
 

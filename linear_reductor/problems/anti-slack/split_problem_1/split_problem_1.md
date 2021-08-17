@@ -4,7 +4,7 @@
 - $d, \delta = 3, \; 3$
 - $\alpha=2$
 - $\beta=1$
-- $\Sigma=[0, 4/10) U [1/2, 1]$
+- $\Sigma=[0, 4/10) \cup [1/2, 1]$
 - Sigma is split at k/3 for each k in 1...2
 - $\epsilon = 0.0001$
 
@@ -13,9 +13,9 @@ Problem is discretizable.
 
 $\;$| Interval | Reduction
 ----|---------|---------
-A | $[0,Fraction(1, 3)]$ | $0.0$
-B | $(1/3, 2/5) \cup [1/2, 2/3)$ | $0.5$
-C | $[Fraction(2, 3),1]$ | $1.0$
+A | $[0,1/3]$ | $0.0$
+B | $(1/3,2/5) \cup [1/2,2/3)$ | $0.5$
+C | $[2/3,1]$ | $1.0$
 
 
 
@@ -34,3 +34,6 @@ A B B
 ```
 
 ## Notes
+
+
+

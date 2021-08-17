@@ -4,7 +4,7 @@
 - $d, \delta = 3, \; 3$
 - $\alpha=7/5$
 - $\beta=8/5$
-- $\Sigma=[0, 1/3) U (1/3, 21/45) U (24/45, 1]$
+- $\Sigma=[0, 1/3) \cup (1/3, 21/45) \cup (24/45, 1]$
 - No splits
 - $\epsilon = 0.0001$
 
@@ -13,8 +13,8 @@ Problem is discretizable.
 
 $\;$| Interval | Reduction
 ----|---------|---------
-A | $[0/1, 1/3) \cup (1/3, 7/15)$ | $0.46656667$
-B | $(8/15, 1/1]$ | $0.53343333$
+A | $[0,1/3) \cup (1/3,7/15)$ | $0.46656667$
+B | $(8/15,1]$ | $0.53343333$
 
 
 
@@ -34,5 +34,6 @@ A B B
 This is an example problem where intervals $[0/1, 1/3)$ and  $(1/3, 7/15)$ are interchangeable in neighborhood table and thus joined.
 
 See [Join problem 2](../join_problem_2/join_problem_2.md).
+
 
 
