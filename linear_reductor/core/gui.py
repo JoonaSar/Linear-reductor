@@ -10,9 +10,9 @@ from pathlib import Path
 import os
 
 from base_logger import logger
-from main import run_reductor
+from main import run_reductor, create_output
 from solver import find_reductions
-from problem import Problem
+from problem import Problem, load_problem
 
 
 # Solver is run on a separate thread, as the GUI would otherwise freeze.
@@ -136,7 +136,7 @@ layout = [[sg.Text('Sigma:', size=(15,1)), sg.Input(key='-IN_SIGMA-', size=(32,1
         [sg.Text('epsilon', size=(15,1)), sg.Input(key='-IN_EPSILON-', default_text=0.0001, size=(32,1))],
         [sg.Text('d, delta:', size=(15,1)), sg.Input(key='-IN_D-', size=(2,1), default_text=3), sg.Input(key='-IN_DELTA-', size=(2,1), default_text=3)],
         [sg.Checkbox("Make splits", key='-IN_DO_SPLITS-'), sg.Input(key='-IN_SPLIT_COUNT-', size=(4,1), default_text=6)],
-        [sg.Button('Find reductions', key ="-REDUCE-", size=(15,1)), sg.Button('Exit', size=(15,1)), sg.Text("Logging level"), sg.Combo(["OFF", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default_value="OFF", key = "-IN_DEBUG-", enable_events = True)],
+        [sg.Button('Find reductions', key ="-REDUCE-", size=(15,1)), sg.Button("Load problem", key = "-LOAD-", size=(15,1)), sg.Button('Exit', size=(15,1)), sg.Text("Logging level"), sg.Combo(["OFF", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default_value="OFF", key = "-IN_DEBUG-", enable_events = True)],
         [sg.ProgressBar(100, key = "-PROGRESS-", orientation = "horizontal", size = (70, 10), visible = True)],
         [sg.Multiline(size = (100,10), key = '-OUTPUT-')],
         [sg.Button("Harden problem", key = "-HARDEN-", size=(15,1), disabled = False)],
@@ -222,6 +222,63 @@ while True:
         window["-SAVE-"].update(disabled=False)
         update_save_path_view(values['-IN_NAME-'])
     
+    if event == "-LOAD-":
+        load_input = sg.popup_get_file("Load a saved problem", file_types=(("Problem files", "*.pickle"),), initial_folder=Path(__file__).parent.parent / "problems")
+        with open(load_input, "r") as f:
+            p, message = load_problem(load_input)
+            if p is None:
+                tqdm.write(message)
+                tqdm.write(f"No problem was found at the file in {load_input}. Exiting program.")
+            elif not p.is_valid_problem():
+                tqdm.write(f"Problem was found, but it was corrupted. Exiting program.")
+            else:
+                # Load problem
+                problem = p
+
+                # Unpack the problem definition
+                logger.debug("Loading problem definition.")
+                window['-IN_SIGMA-'].update(p.parameters["Sigma_string"])
+                window['-IN_ALPHA-'].update(p.parameters["alpha"])
+                window['-IN_BETA-'].update(p.parameters["beta"])
+                window['-IN_EPSILON-'].update(p.parameters["epsilon"])
+                window['-IN_D-'].update(p.parameters["d"])
+                window['-IN_DELTA-'].update(p.parameters["delta"])
+                window['-IN_DO_SPLITS-'].update(p.parameters["do_split"])
+                window['-IN_SPLIT_COUNT-'].update(p.parameters["split_count"])
+                window['-OUTPUT-'].update("Problem loaded succesfully!\n")
+                logger.debug("Problem definition loaded.")
+
+                # Unpack the problem solution
+                try:
+                    logger.debug("Loading problem solution.")
+                    interval_df = p.solution["interval_df"]
+                    neighborhoods = p.solution["neighborhoods"]
+                    manual_neighborhoods = p.solution["manual_neighborhoods"]
+                    var_stack, *_ = p.get_parameters()
+                    output_string = create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods)
+                    window['-OUTPUT-'].write(output_string)
+                    logger.debug("Problem solution loaded.")
+                
+                # No solution found
+                except Exception as e:
+                    logger.debug(e)
+                    window['-OUTPUT-'].write("No solution found!")
+                
+                # Set the save directory to the one indicated by the problem type (in an OS-independent way)
+                window['-IN_NAME-'].update(p.parameters["name"])
+                main_dir = Path(__file__).parent.parent / "problems"
+                if problem.parameters["alpha"] < problem.parameters["beta"] and (main_dir / "slack").is_dir():
+                    save_path = main_dir / "slack"
+
+                elif problem.parameters["alpha"] > problem.parameters["beta"] and (main_dir / "anti-slack").is_dir():
+                    save_path = main_dir / "anti-slack"
+
+                elif (main_dir / "exact").is_dir():
+                    save_path = main_dir / "exact"
+                
+                # Refresh the saving path info box
+                update_save_path_view()
+
     if event == "-SAVE-":
         saved, error_code = problem.save(save_path, values['-IN_NAME-'])
         if saved:

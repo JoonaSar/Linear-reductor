@@ -65,6 +65,9 @@ class Problem:
         return self.toJson()
 
     def save(self, dirpath, savename):
+        # When saving, add name tag
+        self.parameters["name"] = savename
+
         if not dirpath.is_dir():
             raise NotADirectoryError()
         
@@ -108,6 +111,7 @@ class Problem:
 
         a = r"\a"
         b = r"\b"
+        sigma_string = self.parameters["Sigma_string"].replace("U", r"\cup")
         name = savename.replace("_", " ").capitalize()
         sigma = self.parameters["Sigma_string"].replace("U", r"\cup")
 
@@ -129,8 +133,7 @@ class Problem:
             interval_df_str = "$\;$| Interval | Reduction\n----|---------|---------\n"
             for index, row in interval_df.iterrows():
                 interval_df_str += f"{str(index)} | $" 
-                interval_str = re.sub('Fraction\(([0-9]+), ([0-9]+)\),Fraction\(([0-9]+), ([0-9]+)\)', r'\1/\2, \3/\4', str(row["interval"]))
-                interval_str = interval_str.replace("|", "\cup")
+                interval_str = P.to_string(row["interval"], conv= lambda v: str(v), disj=" \cup ")
                 interval_df_str += interval_str
                 interval_df_str += "$ | $" + str(row["reduction"]) +"$\n"
 
@@ -145,7 +148,7 @@ class Problem:
                     black_retor += "\n"
 
             black_retor += "```"
-        
+
         # Try to write the .md file
         try:
             with md_path.open(mode="w") as f:
@@ -156,7 +159,7 @@ class Problem:
 - $d, \delta = {self.parameters["d"]}, \; {self.parameters["delta"]}$
 - ${a}lpha={self.parameters["alpha"]}$
 - ${b}eta={self.parameters["beta"]}$
-- $\Sigma={self.parameters["Sigma_string"]}$
+- $\Sigma={sigma_string}$
 - {splits}
 - $\epsilon = {self.parameters["epsilon"]}$
 
@@ -211,3 +214,6 @@ def read_sigma(Sigma_string):
     interval_li = list(map(lambda x: P.from_string(x, conv=Fraction), Sigma_string.split(" U ")))
     Sigma = reduce(lambda a, b: a | b, interval_li)  
     return Sigma, interval_li
+
+
+
