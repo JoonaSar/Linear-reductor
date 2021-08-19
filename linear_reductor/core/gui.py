@@ -126,13 +126,13 @@ class GuiHandler(logging.StreamHandler):
 
     def __init__(self):
         logging.StreamHandler.__init__(self)
+        self.formatter = logging.Formatter('%(levelname)s: %(message)s')
+
 
     def emit(self, record):
-        sg.Print(str(record).strip())
+        sg.Print(self.formatter.format(record))
 
 ch = GuiHandler()
-formatter = logging.Formatter('%(levelname)s: %(message)s')
-ch.setFormatter(formatter)
 
 # Disable all logs at start, as default value for logging level is OFF
 logging.disable()
@@ -252,7 +252,7 @@ while True:
             window["-REDUCE-"].update(disabled = False)
 
             solutions = thread_df.loc[thread_df["Discretized"], :]
-            window["-OUTPUT-"].write(f"All solvers have completed.\n")
+            window["-OUTPUT-"].update(f"All solvers have completed.\n")
             window["-OUTPUT-"].write(f"{solutions.shape[0]} solutions found in {thread_df.shape[0]} splits.\n")
             logger.debug(f"{solutions.shape[0]} solutions found in {thread_df.shape[0]} splits.")
             
