@@ -4,6 +4,7 @@ import threading
 import sys
 import PySimpleGUI as sg
 from tqdm import tqdm
+import pandas as pd
 
 import re
 from pathlib import Path
@@ -15,15 +16,32 @@ from solver import find_reductions
 from problem import Problem, load_problem
 
 
+# Function to start multiple solver threads, mainly for brute force solving.
+def start_subprocesses(max_split, min_split=1):
+    threads = [None]*(max_split-min_split+1)
+    for split in range(min_split, max_split + 1):
+        thread = threading.Thread(name = f"Solver {split}", target=solve_problem, args=(window, values), kwargs={"fix_splits": split}, daemon=True)
+        thread.start()
+        threads[split-1] = thread
+    thread_df = pd.DataFrame({"Thread":threads, "Discretized":["-"]*(max_split-min_split+1), "Complete":[False]*(max_split-min_split+1), "Solution":[None]*(max_split-min_split+1)}, index = list(range(min_split, max_split + 1)))
+
+    # window 3 layout - note - must be "new" every time a window is created
+    layout3 = [[sg.Text('Reducing the problem with different split counts')],
+    [sg.Multiline("solver situation", size = (50,20), key="-OUT_SOLVERS-")]]
+    
+    window_solver = sg.Window('Multiple split solver', layout3, grab_anywhere=True, finalize=True)
+    return thread_df, window_solver
+
 # Solver is run on a separate thread, as the GUI would otherwise freeze.
-def solve_problem(window, values, problem = None, disallowed_cases = None):
+def solve_problem(window, values, problem = None, disallowed_cases = None, fix_splits=None):
     # This changes if disallowed cases are passed
     neighborhoods = None
 
     logger.debug("Starting a solver thread")
 
-    # Start the progress bar
-    window.write_event_value('-PROGRESS-', " ")
+    # Tell about starting the progress
+    if fix_splits is None:
+        window.write_event_value('-PROGRESS-', " ")
 
     
     # If no problem is given, read inputs and create that problem
@@ -36,7 +54,12 @@ def solve_problem(window, values, problem = None, disallowed_cases = None):
         delta = int(values["-IN_DELTA-"])
 
         do_split = bool(values["-IN_DO_SPLITS-"])
-        split_count = int(values["-IN_SPLIT_COUNT-"])
+        
+        # Allow fixing split count for brute force try-all solution.
+        if fix_splits is None:
+            split_count = int(values["-IN_SPLIT_COUNT-"])
+        else:
+            split_count = fix_splits
 
         problem = Problem(d, delta, beta, alpha, Sigma_string, do_split, split_count, epsilon)
     
@@ -53,6 +76,12 @@ def solve_problem(window, values, problem = None, disallowed_cases = None):
     problem, output_string = run_reductor(problem, neighborhoods, do_print=True)
 
     logger.debug("Solver thread is finished!")
+
+    # If the thread was only one subthread in try-all situation, just tell that you're finished.
+    if fix_splits is not None:
+        window.write_event_value(f'-SUBPROGRESS_DONE_{fix_splits}-', problem)
+        return
+
     
     window.write_event_value('-PROGRESS-', output_string)
 
@@ -135,7 +164,8 @@ layout = [[sg.Text('Sigma:', size=(15,1)), sg.Input(key='-IN_SIGMA-', size=(32,1
         [sg.Text('(Beta) Passive <=', size=(15,1)), sg.Input(key='-IN_BETA-', size=(32,1), default_text="1")],
         [sg.Text('epsilon', size=(15,1)), sg.Input(key='-IN_EPSILON-', default_text=0.0001, size=(32,1))],
         [sg.Text('d, delta:', size=(15,1)), sg.Input(key='-IN_D-', size=(2,1), default_text=3), sg.Input(key='-IN_DELTA-', size=(2,1), default_text=3)],
-        [sg.Checkbox("Make splits", key='-IN_DO_SPLITS-'), sg.Input(key='-IN_SPLIT_COUNT-', size=(4,1), default_text=6)],
+        [sg.Checkbox("Make splits", key='-IN_DO_SPLITS-', enable_events=True), sg.Input(key='-IN_SPLIT_COUNT-', size=(4,1), default_text=6)],
+        [sg.Checkbox("Try all splits sequentially", key='-IN_TRY_ALL-', disabled = True, tooltip="Try all split values up to the input. This may take a long time!")],
         [sg.Button('Find reductions', key ="-REDUCE-", size=(15,1)), sg.Button("Load problem", key = "-LOAD-", size=(15,1)), sg.Button('Exit', size=(15,1)), sg.Text("Logging level"), sg.Combo(["OFF", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default_value="OFF", key = "-IN_DEBUG-", enable_events = True)],
         [sg.ProgressBar(100, key = "-PROGRESS-", orientation = "horizontal", size = (70, 10), visible = True)],
         [sg.Multiline(size = (100,10), key = '-OUTPUT-')],
@@ -163,12 +193,19 @@ while True:
 
     if event == '-REDUCE-':
         # Try to solve problem. Problem-class object with possible solutions is returned.
-        #problem = solve_problem()
+        
         if not solving:
-            thread = threading.Thread(name = "Solver", target=solve_problem, args=(window, values), daemon=True)
-            thread.start()   
+            # If try-all checkbox is selected, all splits from 0 to chosen value are tried sequentially.
+            if values["-IN_TRY_ALL-"]:
+                thread_df, window_solver = start_subprocesses(int(values["-IN_SPLIT_COUNT-"]))
+
+            else:
+                thread = threading.Thread(name = "Solver", target=solve_problem, args=(window, values), daemon=True)
+                thread.start()
+            
             solving = True
             window["-REDUCE-"].update(disabled = True)
+        
 
     if event == "-PROGRESS-":
         output = "Working on the problem...\n"+str(values["-PROGRESS-"])
@@ -176,11 +213,47 @@ while True:
 
     if event == '-PROGRESS_DONE-':
         if thread.is_alive():
-            thread.join(0.5)
+            thread.join(0.25)
         solving = False
         problem = values["-PROGRESS_DONE-"]
         window['-HARDEN-'].update(disabled = False)
         window["-REDUCE-"].update(disabled = False)
+
+    # Handle all finishing try-all subprocesses
+    if "-SUBPROGRESS_DONE_" in event:
+        # Extract the subprocess index
+        split = int(event.split("_")[-1][0:-1])
+        thread = thread_df.at[split, "Thread"]
+        solution = values[event].solution["interval_df"]
+        thread_df.at[split, "Solution"] = solution
+        if solution is None:
+            thread_df.at[split, "Discretized"] = False
+            thread_df.at[split, "Complete"] = True
+        else:
+            thread_df.at[split, "Discretized"] = False
+            thread_df.at[split, "Complete"] = True
+        
+        
+        s = thread_df.to_string(columns = ["Discretized", "Complete"])
+        window_solver["-OUT_SOLVERS-"].update(s)
+        
+        if thread_df.loc[:, "Complete"].all():
+            solving = False
+            window['-HARDEN-'].update(disabled = False)
+            window["-REDUCE-"].update(disabled = False)
+
+            solutions = thread_df.loc[thread_df["Discretized"], :]
+            window["-OUTPUT-"].write(f"All solvers have completed.\n")
+            window["-OUTPUT-"].write(f"{solutions.shape[0]} solutions found in {thread_df.shape[0]} splits.\n")
+            logger.debug(f"{solutions.shape[0]} solutions found in {thread_df.shape[0]} splits.")
+            
+            #if thread_df["Discretized"].any():
+            #    window["-OUTPUT-"].write()
+            
+            window_solver.close()
+        thread.join(0.25)
+        
+
 
     if event == '-HARDEN-' and not harden_window_active:     # only run if not already showing a window2
         harden_window_active = True
@@ -202,7 +275,7 @@ while True:
         layout2.append([sg.Text("Disallowed cases:"), sg.Multiline(key = '-HARDENED_CASES-', size=(30,3))])
         layout2.append([sg.Button("Find reductions", key="-REDUCE_HARDENED-"), sg.Button("Cancel", key="-CANCEL-")])
         
-        window_harden = sg.Window('Window 2', layout2, grab_anywhere=True, finalize=True)
+        window_harden = sg.Window('Hardening window', layout2, grab_anywhere=True, finalize=True)
         window_harden.move(window.current_location()[0]+500, window.current_location()[1])
 
     if event == "-IN_DEBUG-":
@@ -214,6 +287,12 @@ while True:
             logging.disable(logging.NOTSET)
             logger.setLevel(mapper[level])
     
+    if event == "-IN_DO_SPLITS-":
+        if values["-IN_DO_SPLITS-"]:
+            window["-IN_TRY_ALL-"].update(disabled = False)
+        else:
+            window["-IN_TRY_ALL-"].update(value = False, disabled = True)
+    
     if event == "-IN_SAVEFOLDER_FIX-":
         update_save_path_view(values['-IN_NAME-'])
 
@@ -224,60 +303,61 @@ while True:
     
     if event == "-LOAD-":
         load_input = sg.popup_get_file("Load a saved problem", file_types=(("Problem files", "*.pickle"),), initial_folder=Path(__file__).parent.parent / "problems")
-        with open(load_input, "r") as f:
-            p, message = load_problem(load_input)
-            if p is None:
-                tqdm.write(message)
-                tqdm.write(f"No problem was found at the file in {load_input}. Exiting program.")
-            elif not p.is_valid_problem():
-                tqdm.write(f"Problem was found, but it was corrupted. Exiting program.")
-            else:
-                # Load problem
-                problem = p
+        if load_input is not None:
+            with open(load_input, "r") as f:
+                p, message = load_problem(load_input)
+                if p is None:
+                    tqdm.write(message)
+                    tqdm.write(f"No problem was found at the file in {load_input}. Exiting program.")
+                elif not p.is_valid_problem():
+                    tqdm.write(f"Problem was found, but it was corrupted. Exiting program.")
+                else:
+                    # Load problem
+                    problem = p
 
-                # Unpack the problem definition
-                logger.debug("Loading problem definition.")
-                window['-IN_SIGMA-'].update(p.parameters["Sigma_string"])
-                window['-IN_ALPHA-'].update(p.parameters["alpha"])
-                window['-IN_BETA-'].update(p.parameters["beta"])
-                window['-IN_EPSILON-'].update(p.parameters["epsilon"])
-                window['-IN_D-'].update(p.parameters["d"])
-                window['-IN_DELTA-'].update(p.parameters["delta"])
-                window['-IN_DO_SPLITS-'].update(p.parameters["do_split"])
-                window['-IN_SPLIT_COUNT-'].update(p.parameters["split_count"])
-                window['-OUTPUT-'].update("Problem loaded succesfully!\n")
-                logger.debug("Problem definition loaded.")
+                    # Unpack the problem definition
+                    logger.debug("Loading problem definition.")
+                    window['-IN_SIGMA-'].update(p.parameters["Sigma_string"])
+                    window['-IN_ALPHA-'].update(p.parameters["alpha"])
+                    window['-IN_BETA-'].update(p.parameters["beta"])
+                    window['-IN_EPSILON-'].update(p.parameters["epsilon"])
+                    window['-IN_D-'].update(p.parameters["d"])
+                    window['-IN_DELTA-'].update(p.parameters["delta"])
+                    window['-IN_DO_SPLITS-'].update(p.parameters["do_split"])
+                    window['-IN_SPLIT_COUNT-'].update(p.parameters["split_count"])
+                    window['-OUTPUT-'].update("Problem loaded succesfully!\n")
+                    logger.debug("Problem definition loaded.")
 
-                # Unpack the problem solution
-                try:
-                    logger.debug("Loading problem solution.")
-                    interval_df = p.solution["interval_df"]
-                    neighborhoods = p.solution["neighborhoods"]
-                    manual_neighborhoods = p.solution["manual_neighborhoods"]
-                    var_stack, *_ = p.get_parameters()
-                    output_string = create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods)
-                    window['-OUTPUT-'].write(output_string)
-                    logger.debug("Problem solution loaded.")
-                
-                # No solution found
-                except Exception as e:
-                    logger.debug(e)
-                    window['-OUTPUT-'].write("No solution found!")
-                
-                # Set the save directory to the one indicated by the problem type (in an OS-independent way)
-                window['-IN_NAME-'].update(p.parameters["name"])
-                main_dir = Path(__file__).parent.parent / "problems"
-                if problem.parameters["alpha"] < problem.parameters["beta"] and (main_dir / "slack").is_dir():
-                    save_path = main_dir / "slack"
+                    # Unpack the problem solution
+                    try:
+                        logger.debug("Loading problem solution.")
+                        interval_df = p.solution["interval_df"]
+                        neighborhoods = p.solution["neighborhoods"]
+                        manual_neighborhoods = p.solution["manual_neighborhoods"]
+                        var_stack, *_ = p.get_parameters()
+                        output_string = create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods)
+                        window['-OUTPUT-'].write(output_string)
+                        logger.debug("Problem solution loaded.")
+                    
+                    # No solution found
+                    except Exception as e:
+                        logger.debug(e)
+                        window['-OUTPUT-'].write("No solution found!")
+                    
+                    # Set the save directory to the one indicated by the problem type (in an OS-independent way)
+                    window['-IN_NAME-'].update(p.parameters["name"])
+                    main_dir = Path(__file__).parent.parent / "problems"
+                    if problem.parameters["alpha"] < problem.parameters["beta"] and (main_dir / "slack").is_dir():
+                        save_path = main_dir / "slack"
 
-                elif problem.parameters["alpha"] > problem.parameters["beta"] and (main_dir / "anti-slack").is_dir():
-                    save_path = main_dir / "anti-slack"
+                    elif problem.parameters["alpha"] > problem.parameters["beta"] and (main_dir / "anti-slack").is_dir():
+                        save_path = main_dir / "anti-slack"
 
-                elif (main_dir / "exact").is_dir():
-                    save_path = main_dir / "exact"
-                
-                # Refresh the saving path info box
-                update_save_path_view()
+                    elif (main_dir / "exact").is_dir():
+                        save_path = main_dir / "exact"
+                    
+                    # Refresh the saving path info box
+                    update_save_path_view()
 
     if event == "-SAVE-":
         saved, error_code = problem.save(save_path, values['-IN_NAME-'])
@@ -321,3 +401,5 @@ while True:
 
 # 4 - the close
 window.close()
+
+    

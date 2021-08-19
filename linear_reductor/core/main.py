@@ -238,8 +238,8 @@ def main():
 
     problem, output_string = run_reductor(p, do_print=True)
 
-    #if save:
-    #   problem.save(Path(args.save[0]), args.save[1])
+    if save:
+       problem.save(Path(args.save[0]), args.save[1])
     
 if __name__== "__main__":
     main()
