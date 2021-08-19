@@ -21,8 +21,8 @@ def start_subprocesses(max_split, min_split=1):
     threads = [None]*(max_split-min_split+1)
     for split in range(min_split, max_split + 1):
         thread = threading.Thread(name = f"Solver {split}", target=solve_problem, args=(window, values), kwargs={"fix_splits": split}, daemon=True)
-        thread.start()
         threads[split-1] = thread
+        # Create the threads, but as multiprocessing doesn't seem to help much, run them sequentially (also helps with debugs) 
     thread_df = pd.DataFrame({"Thread":threads, "Discretized":["-"]*(max_split-min_split+1), "Complete":[False]*(max_split-min_split+1), "Solution":[None]*(max_split-min_split+1)}, index = list(range(min_split, max_split + 1)))
 
     # window 3 layout - note - must be "new" every time a window is created
@@ -30,6 +30,9 @@ def start_subprocesses(max_split, min_split=1):
     [sg.Multiline("solver situation", size = (50,20), key="-OUT_SOLVERS-")]]
     
     window_solver = sg.Window('Multiple split solver', layout3, grab_anywhere=True, finalize=True)
+    
+    # Start the first thread
+    threads[0].start()
     return thread_df, window_solver
 
 # Solver is run on a separate thread, as the GUI would otherwise freeze.
@@ -71,7 +74,6 @@ def solve_problem(window, values, problem = None, disallowed_cases = None, fix_s
             index = int(change[2::])
             column = change[0]
             neighborhoods.at[index, column] = False
-
 
     problem, output_string = run_reductor(problem, neighborhoods, do_print=True)
 
@@ -223,14 +225,21 @@ while True:
     if "-SUBPROGRESS_DONE_" in event:
         # Extract the subprocess index
         split = int(event.split("_")[-1][0:-1])
+
+        # Start the next thread, if it exists
+        if thread_df.index[-1] > split:
+            thread_df.loc[split+1, "Thread"].start()
+
+        # Update the dataframe 
         thread = thread_df.at[split, "Thread"]
+        
         solution = values[event].solution["interval_df"]
         thread_df.at[split, "Solution"] = solution
         if solution is None:
             thread_df.at[split, "Discretized"] = False
             thread_df.at[split, "Complete"] = True
         else:
-            thread_df.at[split, "Discretized"] = False
+            thread_df.at[split, "Discretized"] = True
             thread_df.at[split, "Complete"] = True
         
         

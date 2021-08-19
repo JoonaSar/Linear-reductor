@@ -46,6 +46,7 @@ def create_test_problem():
 
 
 def run_reductor(problem, neighborhoods = None, do_print = True):
+    logger.debug("Solving problem:"+ str(problem))
     # Main program running reductions. It first checks for 0-round solutions.
 
     var_stack, interval_li, do_split, split_count = problem.get_parameters()
@@ -84,6 +85,7 @@ def run_reductor(problem, neighborhoods = None, do_print = True):
     # Try to find some reductions
 
     interval_df, neighborhoods = find_reductions(neighborhoods, intervals, interval_count, var_stack)
+    logger.info("Returned solution:\n"+str(interval_df))
 
     output_string = create_output(interval_df, neighborhoods, var_stack, manual_neighborhoods, do_print)
 
