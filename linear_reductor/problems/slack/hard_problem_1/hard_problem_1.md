@@ -20,3 +20,6 @@ Problem is not discretizable.
 
 ## Notes
 
+Check out also other versions of this problem:
+[v2](../hard_problem_1_v2/hard_problem_1_v2.md)
+[v3](../hard_problem_1_v3/hard_problem_1_v3.md)
