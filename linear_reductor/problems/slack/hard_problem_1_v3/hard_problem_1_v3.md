@@ -9,7 +9,7 @@
 - $\epsilon = 0.0001$
 
 ## Solution
-Problem is discretizable.
+The following discretization was for a hardening of the problem!
 
 $\;$| Interval | Reduction
 ----|---------|---------
