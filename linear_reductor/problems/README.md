@@ -1,4 +1,4 @@
-# Linear reductor problem listing
+# Linear reductor program
 
 ## Types of problems
 
@@ -62,11 +62,17 @@ Some vocabulary used in code and these problem listings.
 
 Word | Meaning 
 ---|---
-Discretize | To create a 0-round mapping from a linear problem to an LCL.
-Discretization | The 0-round mapping from a linear problem to an LCL.
-Discretization value | The value for an interval in discretization $f$, i.e. discretization value for interval $A$ is $x$ iff $x=f(a), \forall a \in A$  (Also "reduction").
+Discretize | To create a 0-round mapping from a linear problem to an equivevalent LCL.
+Discretization | The 0-round mapping from a linear problem to an equivevalent LCL.
+Discretization value | The value for an interval in discretization $f$, i.e. discretization value for interval $A$ is $x$ iff $x=f(a), \forall a \in A$. (Also "reduction").
 Neighborhood table | Table of each possible combination of intervals, and the info whether that combination *could* satisfy the active and/or passive nodes (refered to as black/white nodes). If the problem discretizes, the information in this table is equivevalent to the information in the RE-formalism string.
 Interchangeable | If two intervals $A$ and $B$ are interchangeable, their rows in the neighborhood table are equivevalent, i.e. rows $A(X...),\; B(X...)$ are equivevalent for all interval combinations $(X...)$. Interchangeability implies that the intervals can be joined.
 Joining (intervals) | Two intervals $A$ and $B$ are joined in the discretization process, so that they receive the same discretization value. This can help the discretization (see [Join problem 1](slack/join_problem_1/join_problem_1.md)). If however there are multiple joins available in a neighborhood table, the order of these joins can affect results. This is an open problem.
 Splitting (intervals) | Splitting intervals at some set of points divides those original intervals so that the new smaller intervals get their own discretization values. The endpoints of these intervals are distributed according to the midpoint-heuristic. For now there isn't a smart way to distinguish when splitting is required, or where those split-points are. At the time if a problem doesn't seem discretizable, it is a good idea to try and split it at every $1/n$ points, and trying different values for $n$. This can either help the discretization (see [Split problem 1](anti-slack/split_problem_1/split_problem_1.md)), or possibly break it. Splitting the interval space can create horribly complex problems, but sometimes the small intervals are automatically joined, so that the important split points remain.
 Midpoint-heuristic | A handwavy heuristic used to determine in which new interval the splitpoint falls into. Midpoint is defined as $\frac{\alpha + \beta}{d + \delta}$, so that every interval containing only smaller values is "small", and vice versa for "large" intervals. The interval which contains the midpoint is "mid". Splitpoints that are smaller than the midpoint are distributed to the smaller interval, and splitpoints larger than the midpoint are distributed to the larger interval. In case of the midpoint being a splitpoint, it is distributed to the smaller interval. This way of distributing the splitpoints is designed to create as many open interval sums as possible, where those could make the difference.
+
+## Notes
+
+GUI is fixed so that $d = \delta$ always, but CLI should handle those cases. This is done because the implementation for problem hardening probably doesn't yet work with $d \neq \delta$.  
+
+Any improvements to finding splitting points would probably be valuable.
