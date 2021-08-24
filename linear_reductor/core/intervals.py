@@ -314,7 +314,7 @@ def name_gen(count = 52):
     # Intervals are named in the following order:
     # 0-25 get uppercase letters,
     # 26-51 get lowercase letters,
-    # If there are more than 56 intervals, this will throw an error.
+    # If there are more than 52 intervals, this will throw an error.
     # Then a more sophisticated solution should be created.
 
     s = string.ascii_uppercase + string.ascii_lowercase

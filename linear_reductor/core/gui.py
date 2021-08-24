@@ -53,8 +53,8 @@ def solve_problem(window, values, problem = None, disallowed_cases = None, fix_s
         alpha = Fraction(values['-IN_ALPHA-'])
         beta = Fraction(values['-IN_BETA-'])
         epsilon = float(values["-IN_EPSILON-"])
-        d = int(values["-IN_D-"])
-        delta = int(values["-IN_DELTA-"])
+        d = int(values["-IN_D_DELTA-"])
+        delta = int(values["-IN_D_DELTA-"])
 
         do_split = bool(values["-IN_DO_SPLITS-"])
         
@@ -165,7 +165,7 @@ layout = [[sg.Text('Sigma:', size=(15,1)), sg.Input(key='-IN_SIGMA-', size=(32,1
         [sg.Text('(Alpha) Active >=', size=(15,1)), sg.Input(key='-IN_ALPHA-', size=(32,1), default_text="1")],
         [sg.Text('(Beta) Passive <=', size=(15,1)), sg.Input(key='-IN_BETA-', size=(32,1), default_text="1")],
         [sg.Text('epsilon', size=(15,1)), sg.Input(key='-IN_EPSILON-', default_text=0.0001, size=(32,1))],
-        [sg.Text('d, delta:', size=(15,1)), sg.Input(key='-IN_D-', size=(2,1), default_text=3), sg.Input(key='-IN_DELTA-', size=(2,1), default_text=3)],
+        [sg.Text('d, delta:', size=(15,1)), sg.Input(key='-IN_D_DELTA-', size=(2,1), default_text=3)],
         [sg.Checkbox("Make splits", key='-IN_DO_SPLITS-', enable_events=True), sg.Input(key='-IN_SPLIT_COUNT-', size=(4,1), default_text=6)],
         [sg.Checkbox("Try all splits sequentially", key='-IN_TRY_ALL-', disabled = True, tooltip="Try all split values up to the input. This may take a long time!")],
         [sg.Button('Find reductions', key ="-REDUCE-", size=(15,1)), sg.Button("Load problem", key = "-LOAD-", size=(15,1)), sg.Button('Exit', size=(15,1)), sg.Text("Logging level"), sg.Combo(["OFF", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default_value="OFF", key = "-IN_DEBUG-", enable_events = True)],
@@ -330,8 +330,8 @@ while True:
                     window['-IN_ALPHA-'].update(p.parameters["alpha"])
                     window['-IN_BETA-'].update(p.parameters["beta"])
                     window['-IN_EPSILON-'].update(p.parameters["epsilon"])
-                    window['-IN_D-'].update(p.parameters["d"])
-                    window['-IN_DELTA-'].update(p.parameters["delta"])
+                    window['-IN_D_DELTA-'].update(p.parameters["d"])
+                    window['-IN_D_DELTA-'].update(p.parameters["delta"])
                     window['-IN_DO_SPLITS-'].update(p.parameters["do_split"])
                     window['-IN_SPLIT_COUNT-'].update(p.parameters["split_count"])
                     window['-OUTPUT-'].update("Problem loaded succesfully!\n")

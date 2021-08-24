@@ -126,10 +126,13 @@ class Problem:
         black_retor = ""
 
         if interval_df is None: 
-            solved = "Problem is not discretizable."
+            solved = "No discretizations found."
             interval_df_str = ""
         else:
-            solved = "Problem is discretizable."
+            if self.solution["manual_neighborhoods"]:
+                solved = "The following discretization was for a hardening of the problem!"
+            else:
+                solved = "Problem is discretizable."
             interval_df_str = "$\;$| Interval | Reduction\n----|---------|---------\n"
             for index, row in interval_df.iterrows():
                 interval_df_str += f"{str(index)} | $" 
