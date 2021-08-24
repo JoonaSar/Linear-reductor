@@ -11,30 +11,28 @@ Consider the following family of locally verifiable problems in (d, $\delta$)-bi
 
 ## Statement
 
-The deterministic time complexity of the problem is either $O(1)$ or $\Omega( \log n)$.
+The deterministic time complexity of the problem is either $O(1)$ or $\Omega( \log n)$. 
 
 ## Proof
-### **Case** $\frac{\alpha}{\delta} < \frac{\beta}{d}$:
+If $\beta=d$ or $\alpha=0$, the problem is either zero round-solvable, or not at all, as in these cases we would have to label everything with either $1$ or $0$ respectively. 
 
-If $\beta=d$ or $\alpha=0$, the problem is either zero round-solvable, or not at all. 
-
-Now let's assume these additional inequalities:
+From now on, let's assume these additional inequalities:
 $$
 \begin{aligned}
 
-\beta &< d  &(1)\\ 
-\alpha &> 0 &(2)\\
-0 < \frac{\alpha}{\delta} &< \frac{\beta}{d} < 1 &(3)
+\beta &< d  \\ 
+\alpha &> 0 
 
 \end{aligned}
-
 $$
 
-If $\Sigma \cap \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right] \neq \emptyset$, the problem is solvable in zero rounds, labeling each edge with some $x \in \Sigma \cap \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right]$.
+Additionally, if $\Sigma \cap \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right] \neq \emptyset$, the problem is solvable in zero rounds, labeling each edge with some $x \in \Sigma \cap \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right]$. From now on let $\Sigma \cap \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right] = \emptyset$. We can relax our problem to be $\Sigma = [0,1] \setminus \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right]$. 
+### **Case** $\frac{\alpha}{\delta} < \frac{\beta}{d}$ (Slack):
 
-Now let $\Sigma \cap \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right] = \emptyset$. We can relax our problem to be $\Sigma = [0,1] \setminus \left[\frac{\alpha}{\delta}, \frac{\beta}{d}\right]$. Now this problem is equivalent to sinkless orientation and thus the original problem is $\Omega(\log n)$.
 
-We will show that there will always be values $a\in A =\left[0, \frac{\alpha}{\delta} \right)$ and $b\in B =\left(\frac{\beta}{d}, 1 \right]$ so if every label from sets $A$ and $B$ is replaced by the corresponding values $a$ and $b$, the solution remains valid, and that the problem is equivalent to sinkless orientation in $(d, \delta)$-biregular trees.
+Now we will show that this problem is equivalent to sinkless orientation and thus the original problem is $\Omega(\log n)$.
+
+We will show that for $a\in A =\left[0, \frac{\alpha}{\delta} \right)$, $b\in B =\left(\frac{\beta}{d}, 1 \right]$ there exists a reduction $f(A) =  a, f(B) = b$ so that the problem is equivevalent to sinkless orientation in $(d, \delta)$-biregular trees.
 
 First consider all the possible neighbourhoods that could exist, and what values they could sum up to. The possible neighbourhoods for active nodes are:
 $$
@@ -78,7 +76,7 @@ For active nodes, we can focus on the reduction of the neighbourhood
 $$
 A,\underbrace{B, B, ...,B}_{d-1 \text{ times}} = a+(d-1)b,
 $$
-as $a+(d-1)b\leq \beta$ and $a<b$ imply the same inequality for all other neighbourhoods.
+as $a+(d-1)b\leq \beta$ and $a<b$ imply $(1+m)a+(d-1-m)b\leq \beta$ for all $m\in\N$.
 
 $$
 \begin{aligned}
@@ -147,36 +145,9 @@ S_P &= \left\{\{B, x_2, x_3,..., x_\delta\} \;|\; x_i\in \Sigma \right\}.
 \end{aligned}
 $$
 
-### **Case** $\frac{\alpha}{\delta} = \frac{\beta}{d}$:
+### **Cases** $\frac{\alpha}{\delta} = \frac{\beta}{d}$ (Exact) and $\frac{\alpha}{\delta} > \frac{\beta}{d}$ (Anti-slack):
+
+An algorithm solving these cases would also be able to solve the easier problem $\frac{\alpha}{\delta} < \frac{\beta}{d}$ (Slack), which is equivevalent to sinkless orientation. 
 
 
-Suppose we have an algorithm that solves our problem in $o(\log n)$ time complexity. Let $A = \left[0, \frac{\alpha}{\delta} \right)$, $B = \left(\frac{\beta}{d}, 1 \right]$. Consider some valid solution for a graph. Let's choose the largest used label from $A$ and the smallest used label from $B$, $a_{max} = \max\left(\{l(e)\;|\;l(e)\in A\}\right)$ and $b_{min} = \min\left(\{l(e)\;|\;l(e)\in B\}\right)$. Now our labeling is also a valid solution to the problem
-$$
-\begin{aligned}
-
-\Sigma' &= \Sigma\\
-
-\alpha' &= \left(\frac{\alpha/\delta+a_{max}}{2}\right)\cdot \delta \\
-\beta' &= \left(\frac{\beta/d+b_{min}}{2}\right)\cdot d 
-
-\end{aligned}
-$$
-
-where especially
-
-$$
-\begin{aligned}
-
-a_{max} &<\frac{\alpha'}{\delta} < \frac{\alpha}{\delta}\\
-\frac{\beta}{d} &<\frac{\beta'}{d} < b_{min} \\
-\frac{\alpha'}{\delta} &< \frac{\beta'}{d}.
-
-\end{aligned}
-
-$$
-Our algorithm created a solution in $o(\log n)$ time to a problem that has time complexity $\Omega(\log n)$, which is a contradiction. Thus $\frac{\alpha}{\delta} = \frac{\beta}{d}\implies \Omega(\log n)$.
-
-### **Case** $\frac{\alpha}{\delta} > \frac{\beta}{d}$:
-
-
-Suppose we have an algorithm $A$ that solves our problem in $o(\log n)$ time complexity. (Something about counting sums of all edge labels in a regular high-girth graph. The algorithm has to fail in some local neighbourhood, but all it ever sees at once is a tree, so it shouldn't.)
+Thus the lower bound $\Omega(\log n)$ holds.

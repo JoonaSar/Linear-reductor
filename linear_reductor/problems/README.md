@@ -1,14 +1,25 @@
 # Linear reductor program
 
+## Packing-covering problem
+Consider the following family of locally verifiable problems in (d, $\delta$)-biregular trees:
+- $\Sigma \subseteq [0,1]$
+- Task is to label the edges
+- Sum of edge labels incident to
+    - active nodes is $\leq \beta$
+    - passive nodes is $\geq \alpha$
+- Additionally leaf nodes accept all possible neighbourhoods.
+
+The purpose of this program is to discretize these problems into equivevalent LCL:s, which are much more easier to argue about.
+
 ## Types of problems
 
-The most important factor in determining if and how a given covering-packing problem is going to discretize, is the ratio between $\alpha$ and $\beta$. Problems are distributed in three classes:
+It seems that the most important factor in determining if and how a given covering-packing problem is going to discretize, is the ratio between $\alpha$ and $\beta$. Problems are distributed in three classes:
 - Slack: $\alpha<\beta$, i.e. any value in $[\alpha, \beta]$ satisfies both active and passive nodes.
 - Exact: $\alpha = \beta$, i.e. only the value $\alpha = \beta$ satisfies both active and passive nodes.
 - Anti-Slack:  $\alpha>\beta$, i.e. no value satisfies both active and passive nodes.
 
 
-## Structure
+## File structure
 
 Problems are listed in a directory in the following format:
 ```
@@ -30,7 +41,6 @@ Problems are listed in a directory in the following format:
  ┃ ┃ ┗ 📜problem_3.md
  ┗ 📜README.md
 ```
-
 Each problem directory contains one human readable markdown file describing the problem, and one computer-readable file containing the problem as a pickled object.
 
 ## Generating and commenting problems
@@ -76,3 +86,5 @@ Midpoint-heuristic | A handwavy heuristic used to determine in which new interva
 GUI is fixed so that $d = \delta$ always, but CLI should handle those cases. This is done because the implementation for problem hardening probably doesn't yet work with $d \neq \delta$.  
 
 Any improvements to finding splitting points would probably be valuable.
+
+In the case that $d \neq \delta$, instead of the ratio of $\alpha$ and $\beta$, one should use the ratio between $\frac{\alpha}{\delta}$ and $\frac{\beta}{d}$ instead.
