@@ -7,13 +7,14 @@ Consider the following locally verifiable problem in (d, $`\delta`$)-biregular t
     - black nodes is $`\leq \beta`$
 - Additionally leaf nodes accept all possible neighborhoods.
 
-This program tries to find a value $`\{a, b, ...\}`$ in each maximal separate continuous interval $`A, B, C, ... \subseteq \Sigma = [0, 1]`$, so that any valid labeling can be transformed to another valid labeling by **simultaneously** replacing all labels with the value corresponding to their interval. This reduces the set of labels down to $`\Sigma = \{a, b, ...\}`$.
+Finding reductions for linear problem requires you to find a value $`a, b, c, ...`$ in each interval $`A, B, C, ... \subseteq \Sigma = [0, 1]`$, where the set $`\{A, B, C,...\}`$ is a partition of $`\Sigma`$, so that any valid labeling can be transformed to another valid labeling by **simultaneously** replacing all labels with the value corresponding to their interval. This reduces the set of labels down to $`\Sigma' = \{a, b, ...\}`$.
 
 
 
 
 
 The basic idea is to check every combination of these intervals and note which of these combinations could be neighborhoods of white and/or black nodes. Using these combinations we can form a system of linear inequalities that the simultanious reductions must satisfy. Lastly we use linear programming to search for a set of values.
+
 
 
 ## Example 1:
