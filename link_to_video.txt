@@ -1,0 +1,5 @@
+Recording of a Zoom talk given at Aalto University Distributed Algorithms group 27.8.2021.
+Topic: Infinite LCL:s with special focus on packing-covering problems
+Speaker: Joona Särkijärvi
+
+https://youtu.be/iwzQ_HvFDCw
