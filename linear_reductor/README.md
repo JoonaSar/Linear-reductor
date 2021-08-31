@@ -1,66 +1,90 @@
-# Finding reductions for linear problems
-Consider the following locally verifiable problem in (d, $`\delta`$)-biregular trees:
-- $`\Sigma \subseteq [0,1]`$
+# Linear reductor program
+
+## Packing-covering problem
+Consider the following family of locally verifiable problems in (d, $\delta$)-biregular trees:
+- $\Sigma \subseteq [0,1]$
 - Task is to label the edges
 - Sum of edge labels incident to
-    - white nodes is $`\geq \alpha`$
-    - black nodes is $`\leq \beta`$
-- Additionally leaf nodes accept all possible neighborhoods.
+    - active nodes is $\leq \beta$
+    - passive nodes is $\geq \alpha$
+- Additionally leaf nodes accept all possible neighbourhoods.
 
-Finding reductions for linear problem requires you to find a value $`a, b, c, ...`$ in each interval $`A, B, C, ... \subseteq \Sigma = [0, 1]`$, where the set $`\{A, B, C,...\}`$ is a partition of $`\Sigma`$, so that any valid labeling can be transformed to another valid labeling by **simultaneously** replacing all labels with the value corresponding to their interval. This reduces the set of labels down to $`\Sigma' = \{a, b, ...\}`$.
+The purpose of this program is to discretize these problems into equivevalent LCL:s, which are much more easier to argue about.
+
+## Types of problems
+
+It seems that the most important factor in determining if and how a given covering-packing problem is going to discretize, is the ratio between $\alpha$ and $\beta$. Problems are distributed in three classes:
+- Slack: $\alpha<\beta$, i.e. any value in $[\alpha, \beta]$ satisfies both active and passive nodes.
+- Exact: $\alpha = \beta$, i.e. only the value $\alpha = \beta$ satisfies both active and passive nodes.
+- Anti-Slack:  $\alpha>\beta$, i.e. no value satisfies both active and passive nodes.
 
 
+## File structure
 
-
-
-The basic idea is to check every combination of these intervals and note which of these combinations could be neighborhoods of white and/or black nodes. Using these combinations we can form a system of linear inequalities that the simultanious reductions must satisfy. Lastly we use linear programming to search for a set of values.
-
-
-
-## Example 1:
-
-Locally verifiable problem $`\Pi`$ in (3,3)-biregular trees:
-- $`\Sigma = [0, 1/3) \cup (2/3, 1]`$
-- $`\alpha = 1`$
-- $`\beta = 2`$
-
-Clearly there are no 0-round solutions, as $`[1/3, 2/3] \cap \Sigma = \emptyset`$. Let $`A= [0, 1/3)`$ and $`B= (2/3, 1]`$. The possible combinations for a neighborhood are:
-
-- A, A, A 
-- A, A, B 
-- A, B, B 
-- B, B, B
-
-We can also calculate the range of the sum of any given neighborhood:
-
-- $`A, A, A = \left[0, 1 \right)`$
-- $`A, A, B = \left(\frac{2}{3}, \frac{5}{3}\right)`$
-- $`A, B, B = \left(\frac{4}{3}, \frac{7}{3}\right)`$
-- $`B, B, B = \left(2, 3\right]`$
-
-This table shows us, for example, that that the neighbourhood $`A, A, B`$ can be a neighbourhood of a black or a white node. This however doesn't yet mean that **any** three values from the corresponding ranges can surround both white and black nodes. It just means that if we were to collapse these ranges into single values, that collapsed neighbourhood would need to be suitable for both white and black nodes. Using this idea we can create a system of inequalities that any suitable reduction must satisfy.
-
-```math
-\begin{aligned}
-
-a \in A \iff 0\leq a &< \frac{1}{3} \\
-b \in B \iff \frac{2}{3} < b &\leq 1 \\
-3a &\leq 2 \\
-1 \leq 2a+b  &\leq 2 \\
-1 \leq a+2b &\leq 2 \\
-3b &\geq 1
-\end{aligned}
+Problems are listed in a directory in the following format:
 ```
-Now any pair $`(a,b)`$ satisfying these inequalities will be a valid reducion. Using linear programming, we can find for example the solution $`(0.161667, 0.676667)`$. Now the problem just as easy as the LCL problem (in RE syntax):
+📦problems
+ ┣ 📂anti-slack
+ ┃ ┣ 📂problem_1
+ ┃ ┃ ┣ 📜problem_1.json
+ ┃ ┃ ┗ 📜problem_1.md
+ ┃ ┗ 📂problem_2
+ ┃ ┃ ┣ 📜problem_2.json
+ ┃ ┃ ┗ 📜problem_2.md
+ ┣ 📂exact
+ ┃ ┗ 📂problem_X
+ ┃ ┃ ┣ 📜problem_X.json
+ ┃ ┃ ┗ 📜problem_X.md
+ ┣ 📂slack
+ ┃ ┗ 📂problem_3
+ ┃ ┃ ┣ 📜problem_3.json
+ ┃ ┃ ┗ 📜problem_3.md
+ ┗ 📜README.md
 ```
-A A A
-A A B
-A B B
+Each problem directory contains one human readable markdown file describing the problem, and one computer-readable file containing the problem as a pickled object.
 
+## Generating and commenting problems
 
-A A B
-A B B
-B B B
+Problems can be generated using the graphical UI. Enter the problem parameters, hit "Find reductions", and harden the problem if you want to. The proper save directory should automatically be determined according to the `slack/exact/anti-slack`-category of your problem, but this can be changed. When saving, remember to give the problem a name.
+
+Problems can also be generated using the command line interface to the program. Run the `main.py` with `-h` flag for instructions:
+```
+usage: main.py [-h] [-d level] [-l path] [-p path] [-s path name]
+
+Reduce continuous covering-packing problems to LCL:s.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d level, --debug level
+                        select debugging level from (D)EBUG, (I)NFO, (W)ARNING, (E)RROR, (C)RITICAL
+  -l path, --logpath path
+                        specify a path for logfile. Otherwise logs are printed to console
+  -p path, --path path  specify an input path to a json file containing the problem
+  -s path name, --save path name
+                        specify a path and name for saving the problem directory
 ```
 
-Note that these reductions **cannot** be found separately: if we choose any value for $`a\in A`$, we can find values $`b_1, b_2, b_3 \in B`$ so that a white node has the neighbourhood $`a+a+b_1<1`$ or a black node has the neighbourhood $`a+b_2+b_3>2`$, which breaks our labeling. Same logic applies to fixing $`b`$ first.
+Anything written after `## Notes` in the human readable markdown-files is preserved. All other markings are overwritten each time the problem files are rewritten, which you might want to do if a new discretization is found to an old problem.
+
+
+## Vocabulary
+Some vocabulary used in code and these problem listings.
+
+Word | Meaning 
+---|---
+Discretize | To create a 0-round mapping from a linear problem to an equivevalent LCL.
+Discretization | The 0-round mapping from a linear problem to an equivevalent LCL.
+Discretization value | The value for an interval in discretization $f$, i.e. discretization value for interval $A$ is $x$ iff $x=f(a), \forall a \in A$. (Also "reduction").
+Neighborhood table | Table of each possible combination of intervals, and the info whether that combination *could* satisfy the active and/or passive nodes (refered to as black/white nodes). If the problem discretizes, the information in this table is equivevalent to the information in the RE-formalism string.
+Interchangeable | If two intervals $A$ and $B$ are interchangeable, their rows in the neighborhood table are equivevalent, i.e. rows $A(X...),\; B(X...)$ are equivevalent for all interval combinations $(X...)$. Interchangeability implies that the intervals can be joined.
+Joining (intervals) | Two intervals $A$ and $B$ are joined in the discretization process, so that they receive the same discretization value. This can help the discretization (see [Join problem 1](problems/slack/join_problem_1/join_problem_1.md)). If however there are multiple joins available in a neighborhood table, the order of these joins can affect results. This is an open problem.
+Splitting (intervals) | Splitting intervals at some set of points divides those original intervals so that the new smaller intervals get their own discretization values. The endpoints of these intervals are distributed according to the midpoint-heuristic. For now there isn't a smart way to distinguish when splitting is required, or where those split-points are. At the time if a problem doesn't seem discretizable, it is a good idea to try and split it at every $1/n$ points, and trying different values for $n$. This can either help the discretization (see [Split problem 1](problems/anti-slack/split_problem_1/split_problem_1.md)), or possibly break it. Splitting the interval space can create horribly complex problems, but sometimes the small intervals are automatically joined, so that the important split points remain.
+Midpoint-heuristic | A handwavy heuristic used to determine in which new interval the splitpoint falls into. Midpoint is defined as $\frac{\alpha + \beta}{d + \delta}$, so that every interval containing only smaller values is "small", and vice versa for "large" intervals. The interval which contains the midpoint is "mid". Splitpoints that are smaller than the midpoint are distributed to the smaller interval, and splitpoints larger than the midpoint are distributed to the larger interval. In case of the midpoint being a splitpoint, it is distributed to the smaller interval. This way of distributing the splitpoints is designed to create as many open interval sums as possible, where those could make the difference.
+
+## Notes
+
+GUI is fixed so that $d = \delta$ always, but CLI should handle those cases. This is done because the implementation for problem hardening probably doesn't yet work with $d \neq \delta$.  
+
+Any improvements to finding splitting points would probably be valuable.
+
+In the case that $d \neq \delta$, instead of the ratio of $\alpha$ and $\beta$, one should use the ratio between $\frac{\alpha}{\delta}$ and $\frac{\beta}{d}$ instead.
