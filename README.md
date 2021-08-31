@@ -15,8 +15,8 @@ Finding reductions for linear problem requires you to find a value $`a, b, c, ..
 
 The basic idea is to check every combination of these intervals and note which of these combinations could be neighborhoods of white and/or black nodes. Using these combinations we can form a system of linear inequalities that the simultanious reductions must satisfy. Lastly we use linear programming to search for a set of values.
 
-More details are explained at the program [readme](linear_reductor/README.md).
-
+More details about automating these reductions can be found at the program [readme](linear_reductor/README.md). <br>
+Check out also the presentation at [https://youtu.be/iwzQ_HvFDCw](https://youtu.be/iwzQ_HvFDCw), [slides](Infinite_LCLs.pdf).
 ## Example 1:
 
 Locally verifiable problem $`\Pi`$ in (3,3)-biregular trees:
